@@ -3,7 +3,7 @@
 #include "LoRaWan_APP.h"
 #include "Arduino.h"
 
-#define RF_FREQUENCY        920000000
+#define RF_FREQUENCY        869250000
 #define LORA_BANDWIDTH      0
 #define LORA_SPREADING_FACTOR 7
 #define LORA_CODINGRATE     1
@@ -56,7 +56,7 @@ void setup() {
 
   // Tx config (para enviar ACK o algo si quieres)
   Radio.SetTxConfig(MODEM_LORA,
-                    20, // dBm
+                    22, // dBm
                     0,
                     LORA_BANDWIDTH,
                     LORA_SPREADING_FACTOR,

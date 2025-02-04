@@ -7,8 +7,8 @@
 #include <HardwareSerial.h>
 #include <HT_TinyGPS++.h>
  
-#define RF_FREQUENCY                                920000000 // Hz
-#define TX_OUTPUT_POWER                             20        // dBm
+#define RF_FREQUENCY                                869250000 // Hz
+#define TX_OUTPUT_POWER                             22        // dBm
 #define LORA_BANDWIDTH                              0         // [0: 125 kHz, 1: 250 kHz, 2: 500 kHz, 3: Reserved]
 #define LORA_SPREADING_FACTOR                       7         // [SF7..SF12]
 #define LORA_CODINGRATE                             1         // [1: 4/5, 2: 4/6, 3: 4/7, 4: 4/8]
