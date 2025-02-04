@@ -197,7 +197,7 @@ void drawText(char node, options op)
     String messagesCompleted = "txNumber: " + String(txNumber);
     display.drawStringMaxWidth(0, 50, 128, messagesCompleted);
 
-    String gpsCompleted = "GPS: " + String(txNumber);
+    String gpsCompleted = "GPS: " + String(gpsCount);
     display.drawStringMaxWidth(80, 50, 128, gpsCompleted);
 
   } else if (op == GPS)
@@ -222,7 +222,7 @@ void drawText(char node, options op)
     String messagesCompleted = "txNumber: " + String(txNumber);
     display.drawStringMaxWidth(0, 50, 128, messagesCompleted);
 
-    String gpsCompleted = "GPS: " + String(txNumber);
+    String gpsCompleted = "GPS: " + String(gpsCount);
     display.drawStringMaxWidth(115, 50, 128, gpsCompleted);
 
   }
@@ -262,10 +262,11 @@ void GPSLocation(void)
       Serial.println();
        
       gpsUpdate = true;
-      gpsCount ++;
       }
     }
     txNumber = 0;
+    gpsCount ++;
+
   }
 }
 
