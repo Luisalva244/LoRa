@@ -120,7 +120,7 @@ void loop()
     if (!gpsUpdate) {
       sendMessage(HUMIDITY);
     } else {
-      sendMessage(GPSDATA);
+      sendMessage(GPS);
       gpsUpdate = false; 
     }
 
@@ -177,7 +177,7 @@ void drawText(char node, options op)
     
     //String(humidity)
     String message = "Humidity: " + String(20) + "Node: " + String(node);
-    display.drawStringMaxWidth(0, 0, 128,messsage);
+    display.drawStringMaxWidth(0, 0, 128,message);
 
     // TODO function to handle this hardcode xdd and dirtty code 
     float alt = LoRaPayLoad.altitude;
@@ -197,9 +197,9 @@ void drawText(char node, options op)
 
   } else if (op == GPS)
   {
-    
+
     String message = "Humidity: " + String(40) + "Node: " + String(node);
-    display.drawStringMaxWidth(0, 0, 128,messsage);
+    display.drawStringMaxWidth(0, 0, 128,message);
 
     float alt = LoRaPayLoad.altitude;
     String altMsg = "Alt=" + String(alt);
@@ -274,9 +274,9 @@ void sendMessage(options op)
 
       break;
     
-    case GPSDATA:
+    case GPS:
       LoRaPayLoad.humidity = 40; 
-      drawText(nodeNumber, GPSDATA);
+      drawText(nodeNumber, GPS);
 
       break;
     
