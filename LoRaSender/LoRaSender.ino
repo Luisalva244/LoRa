@@ -20,6 +20,7 @@
 #define BUFFER_SIZE                                 64 // Define the payload size
 
 static SSD1306Wire  display(0x3c, 500000, SDA_OLED, SCL_OLED, GEOMETRY_128_64, RST_OLED); // addr , freq , i2c group , resolution , rst
+
 HardwareSerial SerialGPS(2);
 TinyGPSPlus gps;
 
@@ -29,22 +30,34 @@ static const uint32_t GPSBaud = 9600;
 
 char txpacket[BUFFER_SIZE];
 int txNumber = 0;        // Contador de mensajes
+char nodeNumber = '1';
+
+enum options
+{
+  HUMIDITY,
+  GPS
+};
 
 /*Flags*/
 bool gpsUpdate = false;     // Hay datos nuevos GPS
 bool lora_idle = true;      // Radio lista
 bool ackReceived = false;   // Flag de ACK
 
+
+#pragma pack(push, 1)
 struct payLoad 
 {
-  char node;
-  int humidity;
-  float latituded;
-  float longituded;
-  float altitude; 
-} LoRaPayLoad;
+  char  node;       
+  float humidity;  
+  float latituded;  
+  float longituded; 
+  float altitude;   
+} __attribute__((packed));
+#pragma pack(pop)
 
-/*
+payLoad LoRaPayLoad;
+
+/* In case esp32 gets flash
 uint32_t licenseKey[4] = 
 {
   0x7C6D0ECA,
@@ -59,8 +72,10 @@ static RadioEvents_t RadioEvents;
 void OnTxDone(void);
 void OnTxTimeout(void);
 void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr);
+
 void GPSLocation();
-void drawTextFlowDemo(void);
+void drawText(char node, options op);
+void sendMessage(options op);
 void VextON(void);
 
 void setup() {
@@ -100,43 +115,31 @@ void loop()
 
   if (lora_idle) 
   {
-    LoRaPayLoad.node = '1';
     ackReceived = false; // Reset ACK flag
 
-    if(!gpsUpdate == false)
-    {
-      Serial.printf("\r\nSending packet: \"%s\", length %d\r\n", txpacket, strlen(txpacket));
-      drawTextFlowDemo();
-      // Send the message
-      Radio.Send((uint8_t *)txpacket, strlen(txpacket));
-      lora_idle = false;
-    } 
-    else 
-    {
-      drawTextFlowDemo();
-      // Send the message
-      Radio.Send((uint8_t *)txpacket, strlen(txpacket));
-      lora_idle = false;
-      gpsUpdate = false;
-    }  
+    if (!gpsUpdate) {
+      sendMessage(HUMIDITY);
+    } else {
+      sendMessage(GPSDATA);
+      gpsUpdate = false; 
+    }
 
-    // *** OPCIONAL *** Esperar 1s a ver si llega ACK (pero sin reintentos)
     unsigned long start = millis();
     while (millis() - start < 1000) {
       Radio.IrqProcess(); // manejar interrupciones
       if (ackReceived) {
         Serial.println("ACK received => Success!");
+        txNumber ++; // Increment the message number
         break;
       }
     }
 
-    Serial.println("No ACK received. Retrying...");
-    Serial.println("Message sent successfully!");
-    txNumber += 1; // Increment the message number
+    if (!ackReceived) {
+      Serial.println("No ACK received. Retrying...");
+    }  
   }
 
   Radio.IrqProcess();
-
 }
 // Callback when transmission is done
 void OnTxDone(void) {
@@ -151,17 +154,72 @@ void OnTxTimeout(void) {
     lora_idle = true;
 }
 
-void drawTextFlowDemo() 
+void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr) 
 {
+  payload[size] = '\0';
+  Serial.printf("Received: %s | RSSI: %d | SNR: %d\n", (char *)payload, rssi, snr);
+
+  if (strncmp((char *)payload, "ACK", 3) == 0) 
+  {
+    ackReceived = true;
+  }
+  Radio.Sleep();
+}
+
+void drawText(char node, options op) 
+{
+  display.clear();
   display.setFont(ArialMT_Plain_10);
   display.setTextAlignment(TEXT_ALIGN_LEFT);
-  display.drawStringMaxWidth(0, 0, 128,"Se recibio el mensaje");
-  String mensajes = "Mensajes recibidos: " + String(txNumber);
-  display.drawStringMaxWidth(0, 40, 128, mensajes);
-  display.display();
-  delay(2000);  
-  display.clear();
-  display.display();
+
+  if (op == HUMIDITY)
+  {     
+    
+    //String(humidity)
+    String message = "Humidity: " + String(20) + "Node: " + String(node);
+    display.drawStringMaxWidth(0, 0, 128,messsage);
+
+    // TODO function to handle this hardcode xdd and dirtty code 
+    float alt = LoRaPayLoad.altitude;
+    String altMsg = "Alt=" + String(alt);
+    display.drawStringMaxWidth(0, 20, 128, altMsg);
+
+    float lon = LoRaPayLoad.longituded;
+    String lonMsg = "Lon=" + String(lon);
+    display.drawStringMaxWidth(60, 20, 128, lonMsg);
+
+    float lat = LoRaPayLoad.latituded;
+    String latMsg = "Lat=" + String(lat);
+    display.drawStringMaxWidth(0, 40, 128, latMsg);
+
+    String messagesCompleted = "txNumber=" + String(txNumber);
+    display.drawStringMaxWidth(60, 40, 128, messagesCompleted);
+
+  } else if (op == GPS)
+  {
+    
+    String message = "Humidity: " + String(40) + "Node: " + String(node);
+    display.drawStringMaxWidth(0, 0, 128,messsage);
+
+    float alt = LoRaPayLoad.altitude;
+    String altMsg = "Alt=" + String(alt);
+    display.drawStringMaxWidth(0, 20, 128, altMsg);
+
+    float lon = LoRaPayLoad.longituded;
+    String lonMsg = "Lon=" + String(lon);
+    display.drawStringMaxWidth(60, 20, 128, lonMsg);
+
+    float lat = LoRaPayLoad.latituded;
+    String latMsg = "Lat=" + String(lat);
+    display.drawStringMaxWidth(0, 40, 128, latMsg);
+
+    String messagesCompleted = "txNumber=" + String(txNumber);
+    display.drawStringMaxWidth(60, 40, 128, messagesCompleted);
+
+  }
+  
+  display.display();    
+
 }
 
 void VextON(void)
@@ -180,21 +238,57 @@ void GPSLocation(void)
 
      if (gps.location.isUpdated())
      {
-      Serial.print("Latitud: ");
-      Serial.println(gps.location.lat(), 6);
-      LoRaPayLoad.latituded = gps.location.lat();
-      Serial.print("Longitud: ");
-      Serial.println(gps.location.lng(), 6);
-      LoRaPayLoad.longituded = gps.location.lng();     
+      LoRaPayLoad.latituded  = gps.location.lat();
+      LoRaPayLoad.longituded = gps.location.lng();
+      LoRaPayLoad.altitude   = gps.altitude.meters();
+
+      Serial.print("Lat: ");
+      Serial.println(LoRaPayLoad.latituded, 6);
+      Serial.print("Lon: ");
+      Serial.println(LoRaPayLoad.longituded, 6);
+      Serial.print("Alt: ");
+      Serial.println(LoRaPayLoad.altitude, 2);
       Serial.print("Sats: ");
       Serial.println(gps.satellites.value());
-      Serial.print("Alt (m): ");
-      Serial.println(gps.altitude.meters());
-      LoRaPayLoad.altitude = gps.altitude.meters();
-      gpsUpdate = true;
       Serial.println();
+
+      gpsUpdate = true;
       }
     }
     txNumber = 0;
   }
+}
+
+void sendMessage(options op)
+{
+  LoRaPayLoad.node = nodeNumber;
+
+  switch(op)
+  {
+    case HUMIDITY:
+      LoRaPayLoad.humidity = 20;  
+      LoRaPayLoad.latituded  = 0;
+      LoRaPayLoad.longituded = 0;
+      LoRaPayLoad.altitude   = 0;
+      drawText(nodeNumber, HUMIDITY);
+
+      break;
+    
+    case GPSDATA:
+      LoRaPayLoad.humidity = 40; 
+      drawText(nodeNumber, GPSDATA);
+
+      break;
+    
+
+  } 
+
+  Radio.Send((uint8_t*)&LoRaPayLoad, sizeof(LoRaPayLoad));
+  lora_idle = false;
+  Serial.printf("Sending struct [node=%c hum=%d lat=%.6f lon=%.6f alt=%.2f]\n",
+                LoRaPayLoad.node,
+                LoRaPayLoad.humidity,
+                LoRaPayLoad.latituded,
+                LoRaPayLoad.longituded,
+                LoRaPayLoad.altitude);
 }
