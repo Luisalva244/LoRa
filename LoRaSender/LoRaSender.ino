@@ -31,6 +31,7 @@ static const uint32_t GPSBaud = 9600;
 char txpacket[BUFFER_SIZE];
 int txNumber = 0;        // Contador de mensajes
 char nodeNumber = '1';
+int gpsCount = 0;
 
 enum options
 {
@@ -129,7 +130,6 @@ void loop()
       Radio.IrqProcess(); // manejar interrupciones
       if (ackReceived) {
         Serial.println("ACK received => Success!");
-        txNumber ++; // Increment the message number
         break;
       }
     }
@@ -162,6 +162,7 @@ void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr)
   if (strncmp((char *)payload, "ACK", 3) == 0) 
   {
     ackReceived = true;
+    txNumber ++;
   }
   Radio.Sleep();
 }
@@ -176,7 +177,8 @@ void drawText(char node, options op)
   {     
     
     //String(humidity)
-    String message = "Humidity: " + String(20) + "   Node: " + String(node);
+    float hum = 20.21;
+    String message = "Humidity: " + String(hum) + "      " + String(node);
     display.drawStringMaxWidth(0, 0, 128,message);
 
     // TODO function to handle this hardcode xdd and dirtty code 
@@ -195,10 +197,14 @@ void drawText(char node, options op)
     String messagesCompleted = "txNumber: " + String(txNumber);
     display.drawStringMaxWidth(0, 50, 128, messagesCompleted);
 
+    String gpsCompleted = "GPS: " + String(txNumber);
+    display.drawStringMaxWidth(80, 50, 128, gpsCompleted);
+
   } else if (op == GPS)
   {
 
-    String message = "Humidity: " + String(40) + "Node: " + String(node);
+    float hum = 40.41;
+    String message = "Humidity: " + String(hum) + "      " + String(node);
     display.drawStringMaxWidth(0, 0, 128,message);
 
     float alt = LoRaPayLoad.altitude;
@@ -216,6 +222,9 @@ void drawText(char node, options op)
     String messagesCompleted = "txNumber: " + String(txNumber);
     display.drawStringMaxWidth(0, 50, 128, messagesCompleted);
 
+    String gpsCompleted = "GPS: " + String(txNumber);
+    display.drawStringMaxWidth(115, 50, 128, gpsCompleted);
+
   }
   
   display.display();    
@@ -230,7 +239,7 @@ void VextON(void)
 
 void GPSLocation(void)
 {
-  if (txNumber > 100)
+  if (txNumber >= 100)
   {
     while(SerialGPS.available()>0)
     {
@@ -251,8 +260,9 @@ void GPSLocation(void)
       Serial.print("Sats: ");
       Serial.println(gps.satellites.value());
       Serial.println();
-
+       
       gpsUpdate = true;
+      gpsCount ++;
       }
     }
     txNumber = 0;
@@ -285,7 +295,7 @@ void sendMessage(options op)
 
   Radio.Send((uint8_t*)&LoRaPayLoad, sizeof(LoRaPayLoad));
   lora_idle = false;
-  Serial.printf("Sending struct [node=%c hum=%d lat=%.6f lon=%.6f alt=%.2f]\n",
+  Serial.printf("Sending struct [node=%c hum=%.2f lat=%.2f lon=%.2f alt=%.2f]\n",
                 LoRaPayLoad.node,
                 LoRaPayLoad.humidity,
                 LoRaPayLoad.latituded,
