@@ -6,6 +6,8 @@
 #include "Arduino.h"
 #include <HardwareSerial.h>
 #include <HT_TinyGPS++.h>
+#include "driver/rtc_io.h"
+#include <driver/gpio.h>
  
 #define RF_FREQUENCY                                869250000 // Hz
 #define TX_OUTPUT_POWER                             22        // dBm
@@ -18,6 +20,8 @@
 #define LORA_IQ_INVERSION_ON                        false
 #define RX_TIMEOUT_VALUE                            1000
 #define BUFFER_SIZE                                 64 // Define the payload size
+#define wakeuptime                                  10 * 1000 * (uint64_t)1000 //Sleep time
+
 
 static SSD1306Wire  display(0x3c, 500000, SDA_OLED, SCL_OLED, GEOMETRY_128_64, RST_OLED); // addr , freq , i2c group , resolution , rst
 
@@ -29,10 +33,10 @@ static const int TXPin = 26;
 static const uint32_t GPSBaud = 9600;
 
 char txpacket[BUFFER_SIZE];
-int txNumber = 0;        // Contador de mensajes
-int txFail = 0;
+RTC_DATA_ATTR int txNumber = 0;        // Contador de mensajes
+RTC_DATA_ATTR int txFail = 0;
 char nodeNumber = '1';
-int gpsCount = 0;
+RTC_DATA_ATTR int gpsCount = 0;
 
 enum options
 {
@@ -79,6 +83,7 @@ void GPSLocation();
 void drawText(char node, options op);
 void sendMessage(options op);
 void VextON(void);
+
 
 void setup() {
     Serial.begin(115200);
@@ -127,12 +132,10 @@ void loop()
     }
 
     unsigned long start = millis();
-    while (millis() - start < 1000) {
+    while (millis() - start < 3000) {
       Radio.IrqProcess(); // manejar interrupciones
       if (ackReceived) {
         Serial.println("ACK received => Success!");
-        txNumber ++;
-        txFail = 0;
         break;
       }
     }
@@ -140,10 +143,16 @@ void loop()
     if (!ackReceived) {
       Serial.println("No ACK received. Retrying...");
       txFail ++;
+      txNumber --;
     }  
   }
 
   Radio.IrqProcess();
+  txNumber ++;
+  
+  esp_sleep_enable_timer_wakeup(wakeuptime);
+  delay(500);
+  esp_deep_sleep_start(); 
 }
 // Callback when transmission is done
 void OnTxDone(void) {
@@ -306,3 +315,4 @@ void sendMessage(options op)
                 LoRaPayLoad.longituded,
                 LoRaPayLoad.altitude);
 }
+
