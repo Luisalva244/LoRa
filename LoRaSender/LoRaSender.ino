@@ -176,24 +176,24 @@ void drawText(char node, options op)
   {     
     
     //String(humidity)
-    String message = "Humidity: " + String(20) + "Node: " + String(node);
+    String message = "Humidity: " + String(20) + "   Node: " + String(node);
     display.drawStringMaxWidth(0, 0, 128,message);
 
     // TODO function to handle this hardcode xdd and dirtty code 
     float alt = LoRaPayLoad.altitude;
-    String altMsg = "Alt=" + String(alt);
+    String altMsg = "Alt: " + String(alt);
     display.drawStringMaxWidth(0, 20, 128, altMsg);
 
     float lon = LoRaPayLoad.longituded;
-    String lonMsg = "Lon=" + String(lon);
+    String lonMsg = "Lon: " + String(lon);
     display.drawStringMaxWidth(60, 20, 128, lonMsg);
 
     float lat = LoRaPayLoad.latituded;
-    String latMsg = "Lat=" + String(lat);
+    String latMsg = "Lat: " + String(lat);
     display.drawStringMaxWidth(0, 40, 128, latMsg);
 
-    String messagesCompleted = "txNumber=" + String(txNumber);
-    display.drawStringMaxWidth(60, 40, 128, messagesCompleted);
+    String messagesCompleted = "txNumber: " + String(txNumber);
+    display.drawStringMaxWidth(0, 50, 128, messagesCompleted);
 
   } else if (op == GPS)
   {
@@ -202,19 +202,19 @@ void drawText(char node, options op)
     display.drawStringMaxWidth(0, 0, 128,message);
 
     float alt = LoRaPayLoad.altitude;
-    String altMsg = "Alt=" + String(alt);
+    String altMsg = "Alt: " + String(alt);
     display.drawStringMaxWidth(0, 20, 128, altMsg);
 
     float lon = LoRaPayLoad.longituded;
-    String lonMsg = "Lon=" + String(lon);
+    String lonMsg = "Lon: " + String(lon);
     display.drawStringMaxWidth(60, 20, 128, lonMsg);
 
     float lat = LoRaPayLoad.latituded;
-    String latMsg = "Lat=" + String(lat);
+    String latMsg = "Lat: " + String(lat);
     display.drawStringMaxWidth(0, 40, 128, latMsg);
 
-    String messagesCompleted = "txNumber=" + String(txNumber);
-    display.drawStringMaxWidth(60, 40, 128, messagesCompleted);
+    String messagesCompleted = "txNumber: " + String(txNumber);
+    display.drawStringMaxWidth(0, 50, 128, messagesCompleted);
 
   }
   
