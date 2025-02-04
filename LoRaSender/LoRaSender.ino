@@ -30,6 +30,7 @@ static const uint32_t GPSBaud = 9600;
 
 char txpacket[BUFFER_SIZE];
 int txNumber = 0;        // Contador de mensajes
+int txFail = 0;
 char nodeNumber = '1';
 int gpsCount = 0;
 
@@ -130,12 +131,15 @@ void loop()
       Radio.IrqProcess(); // manejar interrupciones
       if (ackReceived) {
         Serial.println("ACK received => Success!");
+        txNumber ++;
+        txFail = 0;
         break;
       }
     }
 
     if (!ackReceived) {
       Serial.println("No ACK received. Retrying...");
+      txFail ++;
     }  
   }
 
@@ -162,7 +166,6 @@ void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr)
   if (strncmp((char *)payload, "ACK", 3) == 0) 
   {
     ackReceived = true;
-    txNumber ++;
   }
   Radio.Sleep();
 }
@@ -191,7 +194,7 @@ void drawText(char node, options op)
     display.drawStringMaxWidth(60, 20, 128, lonMsg);
 
     float lat = LoRaPayLoad.latituded;
-    String latMsg = "Lat: " + String(lat);
+    String latMsg = "Lat: " + String(lat) + "      Fail: " + String(txFail);
     display.drawStringMaxWidth(0, 40, 128, latMsg);
 
     String messagesCompleted = "txNumber: " + String(txNumber);
