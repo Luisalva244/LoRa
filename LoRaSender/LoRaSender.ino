@@ -150,14 +150,18 @@ void loop()
       txFail ++;
       txNumber --;
     }  */
+  esp_sleep_enable_timer_wakeup(wakeuptime);
+  delay(500);
+  esp_deep_sleep_start(); 
   }
 
   Radio.IrqProcess();
   txNumber ++;
   
-  esp_sleep_enable_timer_wakeup(wakeuptime);
+  /*esp_sleep_enable_timer_wakeup(wakeuptime);
   delay(500);
   esp_deep_sleep_start(); 
+  */
 }
 // Callback when transmission is done
 void OnTxDone(void) {
