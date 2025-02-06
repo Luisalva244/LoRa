@@ -124,27 +124,32 @@ void loop()
   {
     ackReceived = false; // Reset ACK flag
 
-    if (!gpsUpdate) {
+    if (!gpsUpdate) 
+    {
       sendMessage(HUMIDITY);
-    } else {
+    } else 
+    {
       sendMessage(GPS);
       gpsUpdate = false; 
     }
-
+    /*
     unsigned long start = millis();
-    while (millis() - start < 3000) {
+    while (millis() - start < 3000) 
+    {
       Radio.IrqProcess(); // manejar interrupciones
-      if (ackReceived) {
+      if (ackReceived) 
+      {
         Serial.println("ACK received => Success!");
         break;
       }
-    }
+    }*/
 
-    if (!ackReceived) {
+    /*if (!ackReceived) 
+    {
       Serial.println("No ACK received. Retrying...");
       txFail ++;
       txNumber --;
-    }  
+    }  */
   }
 
   Radio.IrqProcess();
@@ -172,11 +177,12 @@ void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr)
   payload[size] = '\0';
   Serial.printf("Received: %s | RSSI: %d | SNR: %d\n", (char *)payload, rssi, snr);
 
-  if (strncmp((char *)payload, "ACK", 3) == 0) 
+ /* if (strncmp((char *)payload, "ACK", 3) == 0) 
   {
     ackReceived = true;
   }
   Radio.Sleep();
+  */
 }
 
 void drawText(char node, options op) 
