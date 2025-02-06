@@ -98,9 +98,10 @@ void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr) {
     Serial.print(" Alt: ");
     Serial.println(rxData.altitude, 2);
    
-    const char ack[] = "ACK";
+    /*const char ack[] = "ACK";
     Serial.println("Sending ACK...");
     Radio.Send((uint8_t*)ack, strlen(ack));
+    */
 
   } 
   else {
