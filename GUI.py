@@ -12,23 +12,28 @@ def GetSerial():
             uselessData = esp32.readline().decode('utf-8').strip()  # Read and decode
             nodeData = esp32.readline().decode('utf-8').strip() 
             humidityData = esp32.readline().decode('utf-8').strip() 
+            serialData = (nodeData, humidityData)
             print(uselessData)
-            return nodeData + humidityData
+            return serialData
 
-
+ 
         
 
-def nodeNumber(sData):
+def nodeNumber(sData:tuple):
     pattern = r'^Node:\s*(\d+)$'
-    
-    match = re.match(pattern, sData)
+    node = sData[0]    
+
+    match = re.match(pattern, node)
     if match:
         node_value = match.group(1)
         return node_value
     
+
+
 def main_loop():
     while True:
-        Node = nodeNumber(GetSerial())
+        data = GetSerial()
+        Node = nodeNumber(data)
         print(Node)
 
 
