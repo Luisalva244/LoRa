@@ -3,7 +3,7 @@ import sqlite3
 class Database:
 
     def initDataBase(self):
-        
+        #Use a database outside the directory that has git tracking enabled to avoid conflicts with page.py
         conn = sqlite3.connect('./test.db')
         c = conn.cursor()
 
