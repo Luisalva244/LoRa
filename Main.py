@@ -13,7 +13,7 @@ def main():
     db = Database()
     db.initDataBase()
 
-    serial_reader = PySerialReader(port='/dev/ttyUSB1', baudrate=115200, timeout=1)
+    serial_reader = PySerialReader(port='/dev/ttyUSB0', baudrate=115200, timeout=1)
     
     node_parser = NodeParser()
     humidity_parser = HumidityParser()

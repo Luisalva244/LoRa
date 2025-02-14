@@ -25,3 +25,21 @@ class Database:
         print("[INFO] Guardado en la base de datos:", data)
         conn.commit()
         conn.close()
+
+    def get_all_readings(self):
+        conn = sqlite3.connect('test.db')
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, node, humidity, timestamp FROM data")
+        rows = cursor.fetchall()
+        conn.close()
+
+        data = []
+        for row in rows:
+            data.append({
+                "id": row[0],
+                "node": row[1],
+                "humidity": row[2],
+                "timestamp": row[3]
+            })
+        return data
+   
