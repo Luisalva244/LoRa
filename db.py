@@ -3,7 +3,8 @@ import sqlite3
 class Database:
 
     def initDataBase(self):
-        conn = sqlite3.connect('test.db')
+        
+        conn = sqlite3.connect('./test.db')
         c = conn.cursor()
 
         c.execute('''CREATE TABLE IF NOT EXISTS data(
@@ -42,3 +43,6 @@ class Database:
             })
         return data
    
+if __name__ == "__main__":      
+    db = Database()
+    db.initDataBase()

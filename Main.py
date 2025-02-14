@@ -11,7 +11,6 @@ def main():
     humidity_val = None
 
     db = Database()
-    db.initDataBase()
 
     serial_reader = PySerialReader(port='/dev/ttyUSB0', baudrate=115200, timeout=1)
     
