@@ -10,9 +10,6 @@ class Reading(BaseModel):
     node: int
     humidity: float
 
-@app.on_event("startup")
-def startup_event():
-    db.initDataBase()
 
 @app.get("/")
 def read_root():

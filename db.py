@@ -31,7 +31,6 @@ class Database:
         cursor = conn.cursor()
         cursor.execute("SELECT id, node, humidity, timestamp FROM data")
         rows = cursor.fetchall()
-        conn.close()
 
         data = []
         for row in rows:
