@@ -1,13 +1,8 @@
-from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
-from pydantic import BaseModel
-import uvicorn
-from db import Database
-from pageFormat import RootFormat
-
+from fastapi import FastAPI
 
 app = FastAPI()
-db = Database()  
+
 
 class RootFormat:
 
@@ -27,17 +22,18 @@ class RootFormat:
         </head>
         <body>
             <h1>Humidity Chart</h1>
-            <canvas id="myChart" width="100" height="50"></canvas>
+            <canvas id="myChart" width="600" height="400"></canvas>
 
             <script>
             // On page load, fetch your data from a /readings endpoint
             fetch('/readings')
             .then(response => response.json())
             .then(data => {
-
+                // Suppose data is something like:
+                // [ { "node": 1, "humidity": 55.4, "timestamp": "..." }, ... ]
                 
                 // Extract labels (e.g., node or timestamp) and values (humidity)
-                const labels = data.map(item => 'Node ' + item.id);
+                const labels = data.map(item => 'Node ' + item.node);
                 const values = data.map(item => item.humidity);
 
                 const ctx = document.getElementById('myChart').getContext('2d');
@@ -49,8 +45,8 @@ class RootFormat:
                     datasets: [{
                     label: 'Humidity',
                     data: values,
-                    borderColor: 'red',
-                    fill: true
+                    borderColor: 'blue',
+                    fill: false
                     }]
                 },
                 options: {
@@ -67,32 +63,3 @@ class RootFormat:
         """
 
         return html_content
-
-
-class Reading(BaseModel):
-    node: int
-    humidity: float
-
-
-@app.get("/")
-def read_root():
-    return RootFormat.show_chart()
-
-
-@app.get("/readings")
-def read_readings():
-    return db.get_all_readings()
-
-@app.post("/readings")
-def create_reading(reading: Reading):
-    db.writeData({
-        "node": reading.node,
-        "humidity": reading.humidity
-    })
-    return {
-        "message": "Lectura insertada con éxito",
-        "data": reading
-    }
-
-if __name__ == "__main__":
-    uvicorn.run("page:app", host="127.0.0.1", port=8000, reload=True)
