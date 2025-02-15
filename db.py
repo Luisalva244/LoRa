@@ -11,7 +11,7 @@ class Database:
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             node INTEGER,
             humidity FLOAT,
-            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP      
+            timestamp TEXT DEFAULT (datetime('now', 'localtime'))      
         )
         ''')
         conn.commit()
