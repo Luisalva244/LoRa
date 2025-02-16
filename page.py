@@ -57,7 +57,7 @@ class ChartFormat:
                         const nodeData = data.filter(item => item.node === node);
                         
                         // For example, use timestamps as labels
-                        const labels = nodeData.map(item => item.timestamp);
+                        const labels = nodeData.map(item => item.timestamp.substring(3,13));
                         // Use humidity as the data
                         const values = nodeData.map(item => item.humidity);
 
@@ -134,7 +134,7 @@ class ChartFormat:
                         const nodeData = data.filter(item => item.node === node);
                         
                         // For example, use timestamps as labels
-                        const labels = nodeData.map(item => item.timestamp.substring(11, 13) + "-" + item.timestamp.substring(8, 10) + "-" + item.timestamp.substring(4, 7));
+                        const labels = nodeData.map(item => item.timestamp);
                         // Use humidity as the data
                         const values = nodeData.map(item => item.humidity);
 
@@ -308,19 +308,22 @@ def read_readings():
   week = [reading for reading in data if reading["timestamp"][0:2] == week]
   sorted_days = sorted(week, key=lambda x: x["timestamp"][3:13])
   totalHumidity_Per_DayNode = []
-  averageHumidity_Per_Day = {}
 
   for node in sorted_days:
     nodeNumber = node["node"]
     day = node["timestamp"][3:13]
     totalHumidityPerDay = 0  
+    counter = 0
 
     for totalHumidity in sorted_days:
         if totalHumidity["node"] == nodeNumber and totalHumidity["timestamp"][3:13] == day: 
             totalHumidityPerDay += totalHumidity["humidity"]
-    totalHumidity_Per_DayNode.append({"node": nodeNumber, "timestamp": day, "totalHumidity": totalHumidityPerDay})
-  print(totalHumidity_Per_DayNode)
-  print("\n")
+            if totalHumidityPerDay != 0:
+                counter += 1
+            
+                
+    totalHumidity_Per_DayNode.append({"node": nodeNumber,"humidity": round(totalHumidityPerDay/counter,2) , "timestamp": day})
+
 
   unique_totalHumidity_Per_DayNode = []
   seen = set()
@@ -330,18 +333,12 @@ def read_readings():
         unique_totalHumidity_Per_DayNode.append(item)
         seen.add(identifier)
 
-  print(unique_totalHumidity_Per_DayNode)
+  #print(unique_totalHumidity_Per_DayNode)
             
 
   
   #print(sorted_days)
-  print("\n")
-  return sorted_days
-
-
-
-
-
+  return sorted(unique_totalHumidity_Per_DayNode, key=lambda x: x["node"])
 
 
 @app.get("/readingsperday")
