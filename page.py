@@ -23,7 +23,7 @@ class RootFormat:
         </head>
         <body>
             <h1>Bienvenido</h1>
-            <h2><button onclick="window.location.href='http://127.0.0.1:8000/readings/day'">Lecturas por dia</button></h2>
+            <h2><button onclick="window.location.href='http://192.168.1.74:8000/readings/day'">Lecturas por dia</button></h2>
         """    
         return html_content
 
@@ -41,7 +41,7 @@ class ChartFormat:
         </head>
         <body>
             <h1>Humedad en los nodos en el dia</h1>
-            <h2><button onclick="window.location.href='http://0.0.0.0:8000/'">Inicio</button><button onclick="window.location.href='http://0.0.0.0:8000/readings/week'">Promedio por semana</button></h2>
+            <h2><button onclick="window.location.href='http://192.168.1.74:8000/'">Inicio</button><button onclick="window.location.href='http://192.168.1.74:8000/readings/week'">Promedio por semana</button></h2>
             <!-- This container will hold multiple canvases, one per node. -->
             <div id="chartsContainer"></div>            
                 <script>
@@ -117,7 +117,7 @@ class ChartFormat:
             </head>
             <body>
                 <h1>Humedad de los nodos en la semana</h1>
-                <h2><button onclick="window.location.href='http://0.0.0.0:8000/readings/day'">Lecturas por dia</button></h2>
+                <h2><button onclick="window.location.href='http://192.168.1.74:8000/readings/day'">Lecturas por dia</button></h2>
                 <!-- This container will hold multiple canvases, one per node. -->
                 <div id="chartsContainer"></div>
 
@@ -220,7 +220,7 @@ def read_readings():
             {"node":1,"humidity":56.7,"timestamp":"2025-01-01 10:17:00"},
             {"node":1,"humidity":56.8,"timestamp":"2025-01-01 10:18:00"},
             {"node":1,"humidity":56.9,"timestamp":"2025-01-01 10:19:00"},
-            {"node":1,"humidity":57.0,"timestamp":"2025-01-01 10:20:00"},
+            {"node":1,"humidity":57.0,"timestamp":"06 2025-02-16 10:20:00"},
             {"node":1,"humidity":57.1,"timestamp":"2025-01-01 10:21:00"},
             {"node":1,"humidity":80.2,"timestamp":"06 2025-01-01 10:22:00"},
             {"node":1,"humidity":57.3,"timestamp":"2025-01-01 10:23:00"},
@@ -350,7 +350,7 @@ def read_readings():
             {"node":1,"humidity":55.2,"timestamp":"2025-01-01 10:02:00"},
             {"node":1,"humidity":55.3,"timestamp":"2025-01-01 10:03:00"},
             {"node":1,"humidity":55.4,"timestamp":"2025-01-01 10:04:00"},
-            {"node":1,"humidity":55.5,"timestamp":"2025-01-01 10:05:00"},
+            {"node":1,"humidity":55.5,"timestamp":"06 2025-02-16 10:05:00"},
             {"node":1,"humidity":55.6,"timestamp":"2025-01-01 10:06:00"},
             {"node":1,"humidity":55.7,"timestamp":"2025-01-01 10:07:00"},
             {"node":1,"humidity":55.8,"timestamp":"2025-01-01 10:08:00"},
@@ -389,10 +389,10 @@ def read_readings():
             {"node":1,"humidity":59.1,"timestamp":"2025-01-01 10:41:00"},
             {"node":1,"humidity":59.2,"timestamp":"2025-01-01 10:42:00"},
             {"node":1,"humidity":59.3,"timestamp":"2025-01-01 10:43:00"},
-            {"node":1,"humidity":59.4,"timestamp":"06 2025-02-15 10:44:00"},
-            {"node":1,"humidity":59.5,"timestamp":"06 2025-02-15 10:45:00"},
-            {"node":1,"humidity":59.6,"timestamp":"06 2025-02-15 10:46:00"},
-            {"node":1,"humidity":59.7,"timestamp":"06 2025-01-01 10:47:00"},
+            {"node":1,"humidity":49.4,"timestamp":"06 2025-02-16 10:44:00"},
+            {"node":1,"humidity":69.5,"timestamp":"06 2025-02-16 10:45:00"},
+            {"node":1,"humidity":39.6,"timestamp":"06 2025-02-16 10:46:00"},
+            {"node":1,"humidity":69.7,"timestamp":"06 2025-01-16 10:47:00"},
             {"node":1,"humidity":59.8,"timestamp":"2025-01-01 10:48:00"},
             {"node":1,"humidity":59.9,"timestamp":"2025-01-01 10:49:00"},
             {"node":2,"humidity":65.0,"timestamp":"2025-01-01 10:00:00"},
@@ -443,7 +443,7 @@ def read_readings():
             {"node":2,"humidity":69.5,"timestamp":"2025-01-01 10:45:00"},
             {"node":2,"humidity":69.6,"timestamp":"2025-01-01 10:46:00"},
             {"node":2,"humidity":69.7,"timestamp":"2025-04-03 10:47:00"},
-            {"node":2,"humidity":69.8,"timestamp":"06 2025-02-15 10:48:00"},
+            {"node":2,"humidity":69.8,"timestamp":"06 2025-02-16 10:48:00"},
             {"node":2,"humidity":69.9,"timestamp":"06 2025-02-16 10:49:00"}
             ]
 
@@ -475,4 +475,4 @@ def read_readings_week():
 
 
 if __name__ == "__main__":
-    uvicorn.run("page:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("page:app", host="192.168.1.74", port=8000, reload=True)
