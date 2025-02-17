@@ -450,7 +450,6 @@ def read_readings():
   
   date = datetime.now().strftime("%W %Y-%m-%d")  # p.ej. "06 2025-04-03"
   today = date.strip()[3:13]
-  print(today)
   today_readings = [reading for reading in data if reading["timestamp"][3:13] == today]
 
   return today_readings
