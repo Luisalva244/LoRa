@@ -19,7 +19,7 @@ class Database:
 
     def writeData(self, data: dict):
         
-        conn = sqlite3.connect('test.db')
+        conn = sqlite3.connect('./test.db')
         c = conn.cursor()
         c.execute("INSERT INTO data (node, humidity) VALUES (?, ?)", 
                   (data['node'], data['humidity']))
@@ -28,7 +28,7 @@ class Database:
         conn.close()
 
     def get_all_readings(self):
-        conn = sqlite3.connect('test.db')
+        conn = sqlite3.connect('./test.db')
         cursor = conn.cursor()
         cursor.execute("SELECT id, node, humidity, timestamp FROM data")
         rows = cursor.fetchall()

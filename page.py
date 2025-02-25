@@ -1,12 +1,13 @@
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 import uvicorn
 from db import Database
-from pageFormat import RootFormat
 from datetime import datetime
 
 app = FastAPI()
+app.mount("/static", StaticFiles(directory="static"), name="static")
 db = Database()  
 
 
@@ -20,10 +21,16 @@ class RootFormat:
         <head>
             <title>Charts by Node</title>
             <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <link rel="stylesheet" type="text/css" href="/static/styles.css">
         </head>
         <body>
-            <h1>Bienvenido</h1>
-            <h2><button onclick="window.location.href='http://192.168.1.74:8000/readings/day'">Lecturas por dia</button></h2>
+        <div>
+        <img src="/static/fime.png" alt="HTML5 Icon" width="350" height="200" align="left" />
+        <img src="/static/uanl.jpeg" alt="HTML5 Icon" width="350" height="200" align="right" />
+        </div>
+        <h2><button onclick="window.location.href='http://192.168.1.74:8000/readings/day'">Lecturas por dia</button></h2>
+        </body>
+        </html>
         """    
         return html_content
 
@@ -38,14 +45,22 @@ class ChartFormat:
         <head>
             <title>Charts by Node</title>
             <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <link rel="stylesheet" type="text/css" href="/static/styles.css">
         </head>
         <body>
-            <h1>Humedad en los nodos en el dia</h1>
-            <h2><button onclick="window.location.href='http://192.168.1.74:8000/'">Inicio</button><button onclick="window.location.href='http://192.168.1.74:8000/readings/week'">Promedio por semana</button></h2>
+            <h1>Humedad de los nodos en el dia</h1>
+            <div class="button-container">    
+                <div class="Iniciobutton">
+                    <button onclick="window.location.href='http://192.168.1.74:8000/'">Inicio</button>
+                </div>
+                <div class="Semanabutton">
+                    <button onclick="window.location.href='http://192.168.1.74:8000/readings/week'">Promedio de la semana</button>
+                </div>
+            </div>
             <!-- This container will hold multiple canvases, one per node. -->
             <div id="chartsContainer"></div>            
                 <script>
-                // Fetch your data from /readings
+                // Fetch data from /readings
                 fetch('/readingsperday')
                     .then(response => response.json())
                     .then(data => {
@@ -56,20 +71,16 @@ class ChartFormat:
                     uniqueNodes.forEach(node => {
                         const nodeData = data.filter(item => item.node === node);
                         
-                        // For example, use timestamps as labels
                         const labels = nodeData.map(item => item.timestamp.substring(3,13));
                         // Use humidity as the data
                         const values = nodeData.map(item => item.humidity);
 
                         // Create a heading for each node
                         const heading = document.createElement('h2');
-                        heading.textContent = `Nodo ${node}`;
                         document.getElementById('chartsContainer').appendChild(heading);
 
                         // Create a new canvas element
                         const canvas = document.createElement('canvas');
-                        canvas.width = 300;
-                        canvas.height = 150; 
                         // Optionally set an ID if you want to reference it later
                         // canvas.id = `chart_node_${node}`;
                         document.getElementById('chartsContainer').appendChild(canvas);
@@ -81,17 +92,26 @@ class ChartFormat:
                         data: {
                             labels: labels,
                             datasets: [{
-                            label: `Humedad en nodo: ${node}`,
+                            label: `Nodo ${node}`,
                             data: values,
                             borderColor: 'blue',
                             fill: false
                             }]
                         },
                         options: {
+                            plugins: {
+                                legend: {
+                                    labels: {
+                                        font: {
+                                            size: 20 
+                                        }
+                                    }
+                                }
+                            },
                             scales: {
-                            y: {
-                                beginAtZero: true
-                            }
+                                y: {
+                                    beginAtZero: true
+                                }
                             }
                         }
                         });
@@ -114,10 +134,18 @@ class ChartFormat:
             <head>
                 <title>Charts by Node</title>
                 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                <link rel="stylesheet" type="text/css" href="/static/styles.css">
             </head>
             <body>
                 <h1>Humedad de los nodos en la semana</h1>
-                <h2><button onclick="window.location.href='http://192.168.1.74:8000/readings/day'">Lecturas por dia</button></h2>
+                <div class="button-container">    
+                    <div class="Iniciobutton">
+                        <button onclick="window.location.href='http://192.168.1.74:8000/'">Inicio</button>
+                    </div>
+                    <div class="Semanabutton">
+                        <button onclick="window.location.href='http://192.168.1.74:8000/readings/day'">Lecturas del dia</button>
+                    </div>
+                </div>    
                 <!-- This container will hold multiple canvases, one per node. -->
                 <div id="chartsContainer"></div>
 
@@ -140,13 +168,10 @@ class ChartFormat:
 
                         // Create a heading for each node
                         const heading = document.createElement('h2');
-                        heading.textContent = `Nodo ${node}`;
                         document.getElementById('chartsContainer').appendChild(heading);
 
                         // Create a new canvas element
                         const canvas = document.createElement('canvas');
-                        canvas.width = 300;
-                        canvas.height = 150; 
                         // Optionally set an ID if you want to reference it later
                         // canvas.id = `chart_node_${node}`;
                         document.getElementById('chartsContainer').appendChild(canvas);
@@ -158,17 +183,25 @@ class ChartFormat:
                         data: {
                             labels: labels,
                             datasets: [{
-                            label: `Humedad en nodo: ${node}`,
+                            label: `Nodo ${node}`,
                             data: values,
                             borderColor: 'blue',
-                            fill: false
                             }]
                         },
                         options: {
+                            plugins: {
+                                legend: {
+                                    labels: {
+                                        font: {
+                                            size: 20 
+                                        }
+                                    }
+                                }
+                            },
                             scales: {
-                            y: {
-                                beginAtZero: true
-                            }
+                                y: {
+                                    beginAtZero: true
+                                }
                             }
                         }
                         });
@@ -216,13 +249,13 @@ def read_readings():
             {"node":1,"humidity":56.3,"timestamp":"2025-01-01 10:13:00"},
             {"node":1,"humidity":56.4,"timestamp":"2025-01-01 10:14:00"},
             {"node":1,"humidity":56.5,"timestamp":"2025-01-01 10:15:00"},
-            {"node":2,"humidity":30,"timestamp":"06 2025-01-01 10:16:00"},
+            {"node":2,"humidity":30,"timestamp":"07 2025-01-01 10:16:00"},
             {"node":1,"humidity":56.7,"timestamp":"2025-01-01 10:17:00"},
             {"node":1,"humidity":56.8,"timestamp":"2025-01-01 10:18:00"},
             {"node":1,"humidity":56.9,"timestamp":"2025-01-01 10:19:00"},
-            {"node":1,"humidity":57.0,"timestamp":"06 2025-02-16 10:20:00"},
+            {"node":1,"humidity":57.0,"timestamp":"07 2025-02-23 10:20:00"},
             {"node":1,"humidity":57.1,"timestamp":"2025-01-01 10:21:00"},
-            {"node":1,"humidity":80.2,"timestamp":"06 2025-01-01 10:22:00"},
+            {"node":1,"humidity":80.2,"timestamp":"07 2025-02-23 10:22:00"},
             {"node":1,"humidity":57.3,"timestamp":"2025-01-01 10:23:00"},
             {"node":1,"humidity":57.4,"timestamp":"2025-01-01 10:24:00"},
             {"node":1,"humidity":57.5,"timestamp":"2025-01-01 10:25:00"},
@@ -244,16 +277,16 @@ def read_readings():
             {"node":1,"humidity":59.1,"timestamp":"2025-01-01 10:41:00"},
             {"node":1,"humidity":59.2,"timestamp":"2025-01-01 10:42:00"},
             {"node":1,"humidity":59.3,"timestamp":"2025-01-01 10:43:00"},
-            {"node":1,"humidity":59.4,"timestamp":"06 2025-02-15 10:44:00"},
-            {"node":1,"humidity":59.5,"timestamp":"06 2025-02-15 10:45:00"},
-            {"node":1,"humidity":59.6,"timestamp":"06 2025-02-15 10:46:00"},
-            {"node":1,"humidity":59.7,"timestamp":"06 2025-01-01 10:47:00"},
+            {"node":1,"humidity":59.4,"timestamp":"07 2025-02-23 10:44:00"},
+            {"node":1,"humidity":59.5,"timestamp":"07 2025-02-23 10:45:00"},
+            {"node":1,"humidity":59.6,"timestamp":"07 2025-02-23 10:46:00"},
+            {"node":1,"humidity":59.7,"timestamp":"07 2025-01-01 10:47:00"},
             {"node":1,"humidity":59.8,"timestamp":"2025-01-01 10:48:00"},
             {"node":1,"humidity":59.9,"timestamp":"2025-01-01 10:49:00"},
             {"node":2,"humidity":65.0,"timestamp":"2025-01-01 10:00:00"},
-            {"node":2,"humidity":65.1,"timestamp":"06 2025-01-02 10:01:00"},
-            {"node":2,"humidity":65.2,"timestamp":"06 2025-01-01 10:02:00"},
-            {"node":1,"humidity":65.3,"timestamp":"06 2025-01-01 10:03:00"},
+            {"node":2,"humidity":65.1,"timestamp":"07 2025-01-23 10:01:00"},
+            {"node":2,"humidity":65.2,"timestamp":"07 2025-01-23 10:02:00"},
+            {"node":1,"humidity":65.3,"timestamp":"07 2025-01-23 10:03:00"},
             {"node":2,"humidity":65.4,"timestamp":"2025-01-01 10:04:00"},
             {"node":2,"humidity":65.5,"timestamp":"2025-01-01 10:05:00"},
             {"node":2,"humidity":65.6,"timestamp":"2025-01-01 10:06:00"},
@@ -298,10 +331,10 @@ def read_readings():
             {"node":2,"humidity":69.5,"timestamp":"2025-01-01 10:45:00"},
             {"node":2,"humidity":69.6,"timestamp":"2025-01-01 10:46:00"},
             {"node":2,"humidity":69.7,"timestamp":"2025-04-03 10:47:00"},
-            {"node":2,"humidity":69.8,"timestamp":"06 2025-02-16 10:48:00"},
-            {"node":2,"humidity":69.7,"timestamp":"06 2025-02-14 10:47:00"},
-            {"node":2,"humidity":69.8,"timestamp":"06 2025-02-15 10:48:00"},
-            {"node":2,"humidity":69.9,"timestamp":"06 2025-02-15 10:49:00"}]
+            {"node":2,"humidity":69.8,"timestamp":"07 2025-02-16 10:48:00"},
+            {"node":2,"humidity":69.7,"timestamp":"07 2025-02-14 10:47:00"},
+            {"node":2,"humidity":69.8,"timestamp":"07 2025-02-15 10:48:00"},
+            {"node":2,"humidity":69.9,"timestamp":"07 2025-02-15 10:49:00"}]
   
   date = datetime.now().strftime("%W %Y-%m-%d")
   week = date[0:2]
@@ -350,7 +383,7 @@ def read_readings():
             {"node":1,"humidity":55.2,"timestamp":"2025-01-01 10:02:00"},
             {"node":1,"humidity":55.3,"timestamp":"2025-01-01 10:03:00"},
             {"node":1,"humidity":55.4,"timestamp":"2025-01-01 10:04:00"},
-            {"node":1,"humidity":55.5,"timestamp":"06 2025-02-16 10:05:00"},
+            {"node":1,"humidity":55.5,"timestamp":"06 2025-02-23 10:05:00"},
             {"node":1,"humidity":55.6,"timestamp":"2025-01-01 10:06:00"},
             {"node":1,"humidity":55.7,"timestamp":"2025-01-01 10:07:00"},
             {"node":1,"humidity":55.8,"timestamp":"2025-01-01 10:08:00"},
@@ -389,10 +422,10 @@ def read_readings():
             {"node":1,"humidity":59.1,"timestamp":"2025-01-01 10:41:00"},
             {"node":1,"humidity":59.2,"timestamp":"2025-01-01 10:42:00"},
             {"node":1,"humidity":59.3,"timestamp":"2025-01-01 10:43:00"},
-            {"node":1,"humidity":49.4,"timestamp":"06 2025-02-16 10:44:00"},
-            {"node":1,"humidity":69.5,"timestamp":"06 2025-02-16 10:45:00"},
-            {"node":1,"humidity":39.6,"timestamp":"06 2025-02-16 10:46:00"},
-            {"node":1,"humidity":69.7,"timestamp":"06 2025-01-16 10:47:00"},
+            {"node":1,"humidity":49.4,"timestamp":"06 2025-02-23 10:44:00"},
+            {"node":1,"humidity":69.5,"timestamp":"06 2025-02-23 10:45:00"},
+            {"node":1,"humidity":39.6,"timestamp":"06 2025-02-23 10:46:00"},
+            {"node":1,"humidity":69.7,"timestamp":"06 2025-01-23 10:47:00"},
             {"node":1,"humidity":59.8,"timestamp":"2025-01-01 10:48:00"},
             {"node":1,"humidity":59.9,"timestamp":"2025-01-01 10:49:00"},
             {"node":2,"humidity":65.0,"timestamp":"2025-01-01 10:00:00"},
@@ -443,8 +476,8 @@ def read_readings():
             {"node":2,"humidity":69.5,"timestamp":"2025-01-01 10:45:00"},
             {"node":2,"humidity":69.6,"timestamp":"2025-01-01 10:46:00"},
             {"node":2,"humidity":69.7,"timestamp":"2025-04-03 10:47:00"},
-            {"node":2,"humidity":69.8,"timestamp":"06 2025-02-16 10:48:00"},
-            {"node":2,"humidity":69.9,"timestamp":"06 2025-02-16 10:49:00"}
+            {"node":2,"humidity":69.8,"timestamp":"06 2025-02-23 10:48:00"},
+            {"node":2,"humidity":69.9,"timestamp":"06 2025-02-23 10:49:00"}
             ]
 
   

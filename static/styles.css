@@ -1,0 +1,32 @@
+body {
+    background-color: #f0f0f0;
+    font-family: Arial, sans-serif;
+}
+
+h1 {
+    color: #000000;
+    text-align: center;
+}
+
+.button-container {
+    display: flex;
+    justify-content: center;
+    gap: 100px; 
+}
+
+.Iniciobutton {
+    position: relative;
+    color: white;
+    text-align: left;
+}
+
+.Semanabutton {
+    position: relative;
+    color: white;
+    text-align: center;
+}
+
+#chartsContainer canvas {
+    width: 1800px !important;
+    height: 800px !important;
+}
