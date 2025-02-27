@@ -11,19 +11,18 @@
 #define LORA_SYMBOL_TIMEOUT  0
 #define LORA_FIX_LENGTH_PAYLOAD_ON false
 #define LORA_IQ_INVERSION_ON false
-#define BUFFER_SIZE         64
+
 
 #pragma pack(push, 1)
 struct payLoad {
   char  node;
-  float humidity;
-  float latituded;
-  float longituded;
-  float altitude;
+  float soilHumidity;
+  float Humidity;
+  float Temperature;
 } __attribute__((packed));
 #pragma pack(pop)
 
-char rxpacket[BUFFER_SIZE];
+
 static RadioEvents_t RadioEvents;
 void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr);
 void OnTxDone(void);
@@ -54,7 +53,7 @@ void setup() {
                     LORA_IQ_INVERSION_ON,
                     true);
 
-  // Tx config (para enviar ACK o algo si quieres)
+  // Tx config 
   Radio.SetTxConfig(MODEM_LORA,
                     22, // dBm
                     0,
@@ -88,20 +87,17 @@ void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr) {
     // Mostrar cada campo
     Serial.print(" Node: ");
     Serial.println(rxData.node);
+    Serial.print(" soilHumidity: ");
+    Serial.println(rxData.soilHumidity);
     Serial.print(" Humidity: ");
-    Serial.println(rxData.humidity);
-    Serial.print(" Lat: ");
-    Serial.println(rxData.latituded, 6);
-    Serial.print(" Lon: ");
-    Serial.println(rxData.longituded, 6);
-    Serial.print(" Alt: ");
-    Serial.println(rxData.altitude, 2);
+    Serial.println(rxData.Humidity);
+    Serial.print(" Temperature: ");
+    Serial.println(rxData.Temperature);
    
 
 
   } 
   else {
-    // En caso de que sea un mensaje ASCII (por ejemplo "Hello"), o no coincida
     payload[size] = '\0'; 
     Serial.printf("Received (ASCII?): %s | size=%d | RSSI=%d SNR=%d\n", 
                   (char*)payload, size, rssi, snr);
