@@ -1,7 +1,6 @@
 from SerialReader import PySerialReader
 import time
-from Humidity import HumidityParser
-from Node import NodeParser
+from Utilities import HumidityParser, soilHumidityParser, NodeParser, TemperatureParser
 from Data import DataManager
 from db import Database
 
@@ -9,6 +8,8 @@ from db import Database
 def main():
     node_val = None
     humidity_val = None
+    soil_humidity_val = None
+    temperature_val = None
 
     db = Database()
 
@@ -16,7 +17,9 @@ def main():
     
     node_parser = NodeParser()
     humidity_parser = HumidityParser()
-    parsers = [node_parser, humidity_parser]
+    soil_humidity_parser = soilHumidityParser()
+    temperature_parser = TemperatureParser()
+    parsers = [node_parser, humidity_parser, soil_humidity_parser, temperature_parser]
 
     manager = DataManager(reader=serial_reader, parsers=parsers)
 
@@ -24,18 +27,24 @@ def main():
         data = manager.process_next_line()
 
         if data is not None:
-            tipo = data['type']      # 'node' o 'humidity'
-            valor = data['value']    # número
+            tipo = data['type']      
+            valor = data['value'] 
 
             if tipo == 'node':
                 node_val = valor
+            elif tipo == 'soilHumidity':
+                soil_humidity_val = valor
             elif tipo == 'humidity':
                 humidity_val = valor
+            elif tipo == 'temperature':
+                temperature_val = valor
 
-            if node_val is not None and humidity_val is not None:
+            if node_val is not None and soil_humidity_val is not None and humidity_val is not None and temperature_val is not None:
                 dbInfo = {
                     'node': node_val,
-                    'humidity': humidity_val
+                    'soilHumidity': soil_humidity_val,
+                    'humidity': humidity_val,
+                    'temperature': temperature_val
                 }
                 db.writeData(dbInfo)
                 print("[INFO] Guardado:", dbInfo)

@@ -10,7 +10,9 @@ class Database:
         c.execute('''CREATE TABLE IF NOT EXISTS data(
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             node INTEGER,
-            humidity FLOAT,
+            soilHumidity FLOAT,
+            Humidity FLOAT,
+            temperature FLOAT,        
             timestamp TEXT DEFAULT (strftime('%W %Y-%m-%d %H:%M','now','localtime'))     
         )
         ''')
