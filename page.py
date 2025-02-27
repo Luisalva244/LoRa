@@ -281,7 +281,7 @@ def read_readings():
   today_readings = [reading for reading in data if reading["timestamp"][3:13] == today]
   print(data)
 
-  return data
+  return today_readings
 
 
 @app.post("/readings")
