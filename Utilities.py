@@ -21,7 +21,7 @@ class HumidityParser:
     def parse(self, line: str):
         match = self.regex.match(line)
         if match:
-            return {'type': 'humidity','value': float(match.group(1))}
+            return {'type': 'Humidity','value': float(match.group(1))}
         return None
     
 
@@ -33,7 +33,7 @@ class TemperatureParser:
     def parse(self, line: str):
         match = self.regex.match(line)
         if match:
-            return {'type': 'temperature','value': float(match.group(1))}
+            return {'type': 'Temperature','value': float(match.group(1))}
         return None
 
 

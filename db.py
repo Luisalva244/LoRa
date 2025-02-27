@@ -4,7 +4,7 @@ class Database:
 
     def initDataBase(self):
         #Use a database outside the directory that has git tracking enabled to avoid conflicts with page.py
-        conn = sqlite3.connect('./test.db')
+        conn = sqlite3.connect('../test.db')
         c = conn.cursor()
 
         c.execute('''CREATE TABLE IF NOT EXISTS data(
@@ -12,7 +12,7 @@ class Database:
             node INTEGER,
             soilHumidity FLOAT,
             Humidity FLOAT,
-            temperature FLOAT,        
+            Temperature FLOAT,        
             timestamp TEXT DEFAULT (strftime('%W %Y-%m-%d %H:%M','now','localtime'))     
         )
         ''')
@@ -21,18 +21,18 @@ class Database:
 
     def writeData(self, data: dict):
         
-        conn = sqlite3.connect('./test.db')
+        conn = sqlite3.connect('../test.db')
         c = conn.cursor()
-        c.execute("INSERT INTO data (node, humidity) VALUES (?, ?)", 
-                  (data['node'], data['humidity']))
+        c.execute("INSERT INTO data (node, soilHumidity, Humidity, Temperature, timestamp) VALUES (?, ?, ?, ?, datetime('now', 'localtime'))", 
+                  (data['node'], data['soilHumidity'], data['Humidity'], data['Temperature']))
         print("[INFO] Guardado en la base de datos:", data)
         conn.commit()
         conn.close()
 
     def get_all_readings(self):
-        conn = sqlite3.connect('./test.db')
+        conn = sqlite3.connect('/home/luis/Documents/GitHub/test.db')
         cursor = conn.cursor()
-        cursor.execute("SELECT id, node, humidity, timestamp FROM data")
+        cursor.execute("SELECT id, node, soilHumidity, Humidity, Temperature ,timestamp FROM data")
         rows = cursor.fetchall()
 
         data = []
@@ -40,8 +40,10 @@ class Database:
             data.append({
                 "id": row[0],
                 "node": row[1],
-                "humidity": row[2],
-                "timestamp": row[3]
+                "soilHumidity": row[2],
+                "Humidity": row[3],
+                "Temperature": row[4],
+                "timestamp": row[5]
             })
         return data
    
