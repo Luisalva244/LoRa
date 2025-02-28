@@ -8,7 +8,6 @@ class Database:
         c = conn.cursor()
 
         c.execute('''CREATE TABLE IF NOT EXISTS data(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
             node INTEGER,
             soilHumidity FLOAT,
             Humidity FLOAT,
@@ -23,7 +22,7 @@ class Database:
         
         conn = sqlite3.connect('../test.db')
         c = conn.cursor()
-        c.execute("INSERT INTO data (node, soilHumidity, Humidity, Temperature, timestamp) VALUES (?, ?, ?, ?, datetime('now', 'localtime'))", 
+        c.execute("INSERT INTO data (node, soilHumidity, Humidity, Temperature, timestamp) VALUES (?, ?, ?, ?, strftime('%W %Y-%m-%d %H:%M','now','localtime'))", 
                   (data['node'], data['soilHumidity'], data['Humidity'], data['Temperature']))
         print("[INFO] Guardado en la base de datos:", data)
         conn.commit()
@@ -32,18 +31,17 @@ class Database:
     def get_all_readings(self):
         conn = sqlite3.connect('/home/luis/Documents/GitHub/test.db')
         cursor = conn.cursor()
-        cursor.execute("SELECT id, node, soilHumidity, Humidity, Temperature ,timestamp FROM data")
+        cursor.execute("SELECT node, soilHumidity, Humidity, Temperature ,timestamp FROM data")
         rows = cursor.fetchall()
 
         data = []
         for row in rows:
             data.append({
-                "id": row[0],
-                "node": row[1],
-                "soilHumidity": row[2],
-                "Humidity": row[3],
-                "Temperature": row[4],
-                "timestamp": row[5]
+                "node": row[0],
+                "soilHumidity": row[1],
+                "Humidity": row[2],
+                "Temperature": row[3],
+                "timestamp": row[4]
             })
         return data
    

@@ -73,7 +73,10 @@ class ChartFormat:
                         
                         const labels = nodeData.map(item => item.timestamp.substring(3,13));
                         // Use humidity as the data
-                        const values = nodeData.map(item => item.Humidity);
+                        const humidityData = nodeData.map(item => item.Humidity);
+                        const soilHumidityData = nodeData.map(item => item.soilHumidity);
+                        const temperatureData = nodeData.map(item => item.Temperature);
+                                        
 
                         // Create a heading for each node
                         const heading = document.createElement('h2');
@@ -92,8 +95,8 @@ class ChartFormat:
                         data: {
                             labels: labels,
                             datasets: [{
-                            label: `Nodo ${node}`,
-                            data: values,
+                            label: `Humedad ambiental`,
+                            data: humidityData,
                             borderColor: 'blue',
                             fill: false
                             }]
@@ -103,7 +106,7 @@ class ChartFormat:
                                 legend: {
                                     labels: {
                                         font: {
-                                            size: 20 
+                                            size: 10 
                                         }
                                     }
                                 }
