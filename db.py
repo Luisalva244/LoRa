@@ -4,7 +4,7 @@ class Database:
 
     def initDataBase(self):
         #Use a database outside the directory that has git tracking enabled to avoid conflicts with page.py
-        conn = sqlite3.connect('../test.db')
+        conn = sqlite3.connect('/home/luis/Documents/GitHub/test.db')
         c = conn.cursor()
 
         c.execute('''CREATE TABLE IF NOT EXISTS data(
@@ -20,7 +20,7 @@ class Database:
 
     def writeData(self, data: dict):
         
-        conn = sqlite3.connect('../test.db')
+        conn = sqlite3.connect('/home/luis/Documents/GitHub/test.db')
         c = conn.cursor()
         c.execute("INSERT INTO data (node, soilHumidity, Humidity, Temperature, timestamp) VALUES (?, ?, ?, ?, strftime('%W %Y-%m-%d %H:%M','now','localtime'))", 
                   (data['node'], data['soilHumidity'], data['Humidity'], data['Temperature']))
