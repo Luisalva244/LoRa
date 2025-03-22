@@ -7,7 +7,7 @@ from db import Database
 from datetime import datetime
 
 app = FastAPI()
-app.mount("/static", StaticFiles(directory="../LoRa-1/static/"), name="static")
+app.mount("/static", StaticFiles(directory="static"), name="static")
 db = Database()  
 
 
@@ -26,39 +26,33 @@ class RootFormat:
         </head>
         <body>
             <main>
-                <!-- Sección 1: Introducción -->
                 <section id="seccion-uno" class="seccion">
                     <h1>Aplicaciones de LoRa con IoT en la agricultura de precisión.</h1>                   
                 </section>
 
-                <!-- Sección 2:  -->
                 <section id="seccion-dos" class="seccion">
                     <h2>Enfoque del proyecto</h2>
                     <div class="servicios">
                         <div class="servicio">
-                            <p>Este proyecto se enfoca en la implementación de una red de sensores IoT 
-                                basada en la tecnología LoRa específicamente para el monitoreo agrícola en 
-                                Monterrey, Nuevo León. Se establecerán dispositivos con sensores en áreas de 
-                                cultivo para recolectar datos clave como la humedad del suelo, temperatura y 
-                                humedad del ambiente, con el fin de optimizar prácticas agrícolas. </p>
+                            <p>Este proyecto se enfoca en la implementación de una red de sensores IoT basada en la tecnología LoRa específicamente para el monitoreo agrícola en Monterrey, Nuevo León. Se establecerán dispositivos con sensores en áreas de cultivo para recolectar datos clave como la humedad del suelo, temperatura y humedad del ambiente, con el fin de optimizar prácticas agrícolas. </p>
                         </div>
                     </div>
+                </section>
 
-                <!-- Sección 3: Monitoreo -->
                 <section id="seccion-tres" class="seccion">
                     <h2>Monitoreo de los Datos</h2>
+                    <br>
                     <p>Los dispositivos LoRa enviarán su información, la cual se recopilará en una base de datos y será procesada en tiempo real sobre las condiciones del suelo y el ambiente, permitiendo a los agricultores tomar decisiones informadas sobre el riego. Los datos incluirán:</p>
-                    <ul>
                         <li>Humedad del suelo</li>
                         <li>Temperatura ambiental</li>
                         <li>Humedad relativa del aire</li>
-                    </ul>
+                    <br>
                     <p>Estos datos serán procesados y mostrados en tiempo real, ayudando a mejorar la eficiencia de las actividades agrícolas y reduciendo el uso de recursos como el agua.</p>
+                    <br>
                     <div class="Semanabutton">
                         <button onclick="window.location.href='http://192.168.1.74:8000/readings/day'">Lecturas del dia</button>
                         <button onclick="window.location.href='http://192.168.1.74:8000/readings/week'">Promedio de la semana</button>                    
-                    </div>                      
-                </section>
+                    </div>
                 </section>
             </main>
         </body>
@@ -82,7 +76,7 @@ class ChartFormat:
         <body>
             <h1>Humedad de los nodos en el dia</h1>
             <div class="button-container">    
-                <div class="Iniciobutton">
+                <div class="Semanabutton">
                     <button onclick="window.location.href='http://192.168.1.74:8000/'">Inicio</button>
                 </div>
                 <div class="Semanabutton">
@@ -193,7 +187,7 @@ class ChartFormat:
             <body>
                 <h1>Humedad de los nodos en la semana</h1>
                 <div class="button-container">    
-                    <div class="Iniciobutton">
+                    <div class="Semanabutton">
                         <button onclick="window.location.href='http://192.168.1.74:8000/'">Inicio</button>
                     </div>
                     <div class="Semanabutton">
@@ -312,11 +306,11 @@ def read_root():
 def read_readings_week():
     data = db.get_all_readings()
 
-    # Get current week number (assumed to be the first two characters of the timestamp)
+    
     date = datetime.now().strftime("%W %Y-%m-%d")
     current_week = date[0:2]
     
-    # Filter readings from the current week
+    
     week_readings = [reading for reading in data if reading["timestamp"][0:2] == current_week]
     week_readings = sorted(week_readings, key=lambda x: x["timestamp"][3:13])
     
@@ -430,11 +424,9 @@ def create_reading(reading: Reading):
 
 
 
-@app.get("/readings/week")
-def read_readings_week():
-    return ChartFormat.show_weekchart()
-
-
+#@app.get("/readings/week")
+#def read_readings_week():
+#    return ChartFormat.show_weekchart()
 
 
 @app.get("/weeks", response_class=HTMLResponse)
@@ -443,7 +435,7 @@ def show_weeks():
     semanas = set()
     for lectura in data:
         # Se asume que los dos primeros caracteres del timestamp representan la semana
-        semana = lectura["timestamp"][:2]
+        semana = lectura["timestamp"][0:2]
         semanas.add(semana)
     semanas = sorted(semanas)
 
@@ -473,6 +465,58 @@ def show_weeks():
     """
     return html_content
 
+@app.get("/readings/week", response_class=HTMLResponse)
+def show_weekchart(week: str = None):
+    data = db.get_all_readings()
+
+    if week:
+        # Filtrar las lecturas que correspondan a la semana proporcionada
+        week_readings = [r for r in data if r["timestamp"][0:2] == week]
+        print(week_readings)
+        print("THis shit is not working")
+    else:
+        # Si no se especifica semana, se usa la semana actual
+        date = datetime.now().strftime("%W %Y-%m-%d")
+        current_week = date[0:2]
+        week_readings = [r for r in data if r["timestamp"][0:2] == current_week]
+        
+
+    # Resto del procesamiento de datos igual que antes...
+    week_readings = sorted(week_readings, key=lambda x: x["timestamp"][3:13])
+    
+    node_day_readings = {}
+    for lectura in week_readings:
+        node = lectura["node"]
+        dia = lectura["timestamp"][3:13]  # e.g., "2025-04-03"
+        if node not in node_day_readings:
+            node_day_readings[node] = {}
+        if dia not in node_day_readings[node]:
+            node_day_readings[node][dia] = [node, 0, 0, 0, 0]
+        node_day_readings[node][dia][1] += lectura["Humidity"]
+        node_day_readings[node][dia][2] += lectura["soilHumidity"]
+        node_day_readings[node][dia][3] += lectura["Temperature"]
+        node_day_readings[node][dia][4] += 1
+
+    node_day_averages = []
+    for nodo, dias in node_day_readings.items():
+        for dia, valores in dias.items():
+            _, hum_sum, soil_sum, temp_sum, count = valores
+            if count > 0:
+                avg_humidity = round(hum_sum / count, 2)
+                avg_soilHumidity = round(soil_sum / count, 2)
+                avg_temperature = round(temp_sum / count, 2)
+            else:
+                avg_humidity = avg_soilHumidity = avg_temperature = 0
+            node_day_averages.append({
+                "node": nodo,
+                "timestamp": dia,
+                "Humidity": avg_humidity,
+                "soilHumidity": avg_soilHumidity,
+                "Temperature": avg_temperature
+            })
+
+    print(node_day_averages)
+    return sorted(node_day_averages, key=lambda x: (x["node"], x["timestamp"]))
 
 if __name__ == "__main__":
     uvicorn.run("page:app", host="192.168.1.74", port=8000, reload=True)
