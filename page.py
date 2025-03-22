@@ -62,231 +62,316 @@ class RootFormat:
 
 
 class ChartFormat:
+
     @app.get("/readings/day", response_class=HTMLResponse)
     def show_daychart():
-       ## TO DO - Implement logic to display average values per hour of the day and new information (Temperature, Soil Humidity)
         html_content = """
         <!DOCTYPE html>
-        <html>
+        <html lang="es">
         <head>
-            <title>Charts by Node</title>
-            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <meta charset="UTF-8">
+            <title>Lecturas del Día - Gráfica</title>
             <link rel="stylesheet" type="text/css" href="/static/styles.css">
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         </head>
         <body>
-            <h1>Humedad de los nodos en el dia</h1>
-            <div class="button-container">    
+        <div class="controls-area">
+            <h1>Humedad de los nodos en el día</h1>
+            <div class="button-container">
                 <div class="Semanabutton">
                     <button onclick="window.location.href='http://192.168.1.74:8000/'">Inicio</button>
                 </div>
                 <div class="Semanabutton">
-                    <button onclick="window.location.href='http://192.168.1.74:8000/readings/week'">Promedio de la semana</button>
+                    <button onclick="window.location.href='http://192.168.1.74:8000/readings/week'">
+                        Promedio de la semana
+                    </button>
+                </div>
+                <div class="Semanabutton">
+                    <select id="nodeSelectDay">
+                        <option value=""> Selecciona un nodo </option>
+                    </select>
+                </div>
+                <div class="Semanabutton">
+                    <select id="SelectDay">
+                        <option value=""> Selecciona un día </option>
+                    </select>
                 </div>
             </div>
-            <!-- This container will hold multiple canvases, one per node. -->
-            <div id="chartsContainer"></div>            
-                <script>
-                // Fetch data from /readings
-                fetch('/readingsperday')
-                    .then(response => response.json())
-                    .then(data => {
-                    // 1) Extract the unique node numbers
-                    const uniqueNodes = [...new Set(data.map(item => item.node))];
+        </div>
+            <!-- Contenedor para la gráfica -->
+            <div id="chartsContainer">
+                <canvas id="dayChart" width="400" height="800"></canvas>
+            </div>
+            <script>
+                let dayChartInstance = null;
 
-                    // 2) For each node, filter the readings that belong to it
-                    uniqueNodes.forEach(node => {
-                        const nodeData = data.filter(item => item.node === node);
-                        
-                        const labels = nodeData.map(item => item.timestamp.substring(11,16));
-                        // Use humidity as the data
-                        const humidityData = nodeData.map(item => item.Humidity);
-                        const soilHumidityData = nodeData.map(item => item.soilHumidity);
-                        const temperatureData = nodeData.map(item => item.Temperature);
-                                        
-
-                        // Create a heading for each node
-                        const heading = document.createElement('h2');
-                        document.getElementById('chartsContainer').appendChild(heading);
-
-                        // Create a new canvas element
-                        const canvas = document.createElement('canvas');
-                        // Optionally set an ID if you want to reference it later
-                        canvas.width = 30;
-                        canvas.height = 10;
-                        document.getElementById('chartsContainer').appendChild(canvas);
-
-                        // Build the chart for this node
-                        const ctx = canvas.getContext('2d');
-                        new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: labels,
-                            datasets: [
-                            {
-                            label: `Nodo ${node}`,
-                            borderColor: 'gray',
-                            },
-                            {
-                            label: `Humedad ambiental`,
-                            data: humidityData,
-                            borderColor: 'blue',
-                            fill: false
-                            },
-                            {
-                            label: `Humedad del suelo`,
-                            data: soilHumidityData,
-                            borderColor: 'green',
-                            fill: false
-                            },
-                            {
-                            label: `Temperatura`,
-                            data: temperatureData,
-                            borderColor: 'red',
-                            fill: false
+                // Actualiza la gráfica según el nodo y el día seleccionados
+                function updateDayChart(selectedNode, selectedDay) {
+                    let url = '/readingsperday';
+                    if(selectedDay) {
+                        url += '?date=' + selectedDay;
+                    }
+                    fetch(url)
+                        .then(response => response.json())
+                        .then(data => {
+                            // Si se selecciona un nodo, filtrar los datos
+                            if(selectedNode) {
+                                data = data.filter(item => item.node == selectedNode);
                             }
-                        ]
-                        },
-                        options: {
-                            plugins: {
-                                legend: {
-                                    labels: {
-                                        font: {
-                                            size: 15 
-                                        }
-                                    }
-                                }
-                            },
-                            scales: {
-                                y: {
-                                    beginAtZero: true
-                                }
+                            if(data.length === 0) return;
+                            const labels = data.map(item => item.timestamp.substring(11, 16));
+                            const humidity = data.map(item => item.Humidity);
+                            const soilHumidity = data.map(item => item.soilHumidity);
+                            const temperature = data.map(item => item.Temperature);
+                            const ctx = document.getElementById("dayChart").getContext("2d");
+                            if(dayChartInstance) {
+                                dayChartInstance.destroy();
                             }
-                        }
-                        });
-                    });
-                    })
-                    .catch(err => console.error('Error fetching /readings:', err));
-                </script>
+                            dayChartInstance = new Chart(ctx, {
+                                type: 'line',
+                                data: {
+                                    labels: labels,
+                                    datasets: [
+                                        { label: "Humedad ambiental", data: humidity, borderColor: 'blue', fill: false },
+                                        { label: "Humedad del suelo", data: soilHumidity, borderColor: 'green', fill: false },
+                                        { label: "Temperatura", data: temperature, borderColor: 'red', fill: false }
+                                    ]
+                                },
+                                options: {
+                                    plugins: {
+                                        legend: { labels: { font: { size: 15 } } }
+                                    },
+                                    scales: { y: { beginAtZero: true } },
+                                    maintainAspectRatio: false
+                                }
+                            });
+                        })
+                        .catch(err => console.error('Error fetching /readingsperday:', err));
+                }
+
+                // Carga los días disponibles (del mes actual) en el selector
+                function loadDays() {
+                    fetch('/daysdata')
+                        .then(response => response.json())
+                        .then(days => {
+                            const selectDay = document.getElementById("SelectDay");
+                            selectDay.innerHTML = '<option value=""> Selecciona un día </option>';
+                            days.forEach(day => {
+                                let option = document.createElement("option");
+                                option.value = day;
+                                option.text = day;
+                                selectDay.appendChild(option);
+                            });
+                            // Si existen días, se selecciona el primero por defecto
+                            if(days.length > 0) {
+                                selectDay.value = days[0];
+                                updateDayChart("", days[0]);
+                                loadNodes(days[0]);
+                            }
+                        })
+                        .catch(err => console.error('Error fetching /daysdata:', err));
+                }
+
+                // Carga los nodos disponibles para el día seleccionado
+                function loadNodes(selectedDay) {
+                    let url = '/readingsperday';
+                    if(selectedDay) {
+                        url += '?date=' + selectedDay;
+                    }
+                    fetch(url)
+                        .then(response => response.json())
+                        .then(data => {
+                            const nodes = [...new Set(data.map(item => item.node))];
+                            const selectNode = document.getElementById("nodeSelectDay");
+                            selectNode.innerHTML = '<option value=""> Selecciona un nodo </option>';
+                            nodes.forEach(node => {
+                                let option = document.createElement("option");
+                                option.value = node;
+                                option.text = "Nodo " + node;
+                                selectNode.appendChild(option);
+                            });
+                        })
+                        .catch(err => console.error('Error fetching nodes:', err));
+                }
+
+                // Evento para cambio en el selector de días
+                document.getElementById("SelectDay").addEventListener("change", function() {
+                    const selectedDay = this.value;
+                    const selectedNode = document.getElementById("nodeSelectDay").value;
+                    updateDayChart(selectedNode, selectedDay);
+                    loadNodes(selectedDay);
+                });
+
+                // Evento para cambio en el selector de nodos
+                document.getElementById("nodeSelectDay").addEventListener("change", function() {
+                    const selectedNode = this.value;
+                    const selectedDay = document.getElementById("SelectDay").value;
+                    updateDayChart(selectedNode, selectedDay);
+                });
+
+                // Inicia cargando los días disponibles
+                loadDays();
+            </script>
         </body>
         </html>
         """
-
         return html_content
+    
 
     @app.get("/readings/week", response_class=HTMLResponse)
     def show_weekchart():
-            ## TO DO - Implement logic to display new information (Temperature, Soil Humidity)
-            html_content = """
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>Charts by Node</title>
-                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-                <link rel="stylesheet" type="text/css" href="/static/styles.css">
-            </head>
-            <body>
-                <h1>Humedad de los nodos en la semana</h1>
-                <div class="button-container">    
-                    <div class="Semanabutton">
-                        <button onclick="window.location.href='http://192.168.1.74:8000/'">Inicio</button>
-                    </div>
-                    <div class="Semanabutton">
-                        <button onclick="window.location.href='http://192.168.1.74:8000/readings/day'">Lecturas del dia</button>
-                    </div>
-                </div>    
-                <!-- This container will hold multiple canvases, one per node. -->
-                <div id="chartsContainer"></div>
+        html_content = """
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <title>Lecturas de la Semana - Gráfica</title>
+            <link rel="stylesheet" type="text/css" href="/static/styles.css">
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        </head>
+        <body>
+        <div class="controls-area">        
+            <h1>Humedad de los nodos en la semana</h1>
+            <div class="button-container">
+                <div class="Semanabutton">
+                    <button onclick="window.location.href='http://192.168.1.74:8000/'">Inicio</button>
+                </div>
+                <div class="Semanabutton">
+                    <button onclick="window.location.href='http://192.168.1.74:8000/readings/day'">Lecturas del día</button>
+                </div>
+                <!-- Selector para nodo -->
+                <div class="Semanabutton">
+                    <select id="nodeSelectWeek">
+                        <option value=""> Selecciona un nodo </option>
+                    </select>
+                </div>
+                <!-- Selector para semana -->
+                <div class="Semanabutton">
+                    <select id="SelectWeek">
+                        <option value=""> Selecciona una semana </option>
+                    </select>
+                </div>                
+            </div>
+        </div>        
+            <!-- Contenedor para la gráfica única -->
+            <div id="chartsContainer">
+                <canvas id="weekChart" width="400" height="800"></canvas>
+            </div>
+            <script>
+                let weekChartInstance = null;
 
-                <script>
-                // Fetch your data from /readings
+                // Función para actualizar la gráfica con parámetros de nodo y semana seleccionados
+                function updateWeekChart(selectedNode, selectedWeek) {
+                    let url = '/readingsperweek';
+                    if(selectedWeek) {
+                        url += '?week=' + selectedWeek;
+                    }
+                    fetch(url)
+                        .then(response => response.json())
+                        .then(data => {
+                            // Si se selecciona un nodo, filtrar los datos
+                            if(selectedNode) {
+                                data = data.filter(item => item.node == selectedNode);
+                            }
+                            if(data.length === 0) return;
+                            const labels = data.map(item => item.timestamp);
+                            const humidity = data.map(item => item.Humidity);
+                            const soilHumidity = data.map(item => item.soilHumidity);
+                            const temperature = data.map(item => item.Temperature);
+
+                            const ctx = document.getElementById("weekChart").getContext("2d");
+                            if(weekChartInstance != null) {
+                                weekChartInstance.destroy();
+                            }
+                            weekChartInstance = new Chart(ctx, {
+                                type: 'line',
+                                data: {
+                                    labels: labels,
+                                    datasets: [
+                                        {
+                                            label: "Humedad ambiental",
+                                            data: humidity,
+                                            borderColor: 'blue',
+                                            fill: false
+                                        },
+                                        {
+                                            label: "Humedad del suelo",
+                                            data: soilHumidity,
+                                            borderColor: 'green',
+                                            fill: false
+                                        },
+                                        {
+                                            label: "Temperatura",
+                                            data: temperature,
+                                            borderColor: 'red',
+                                            fill: false
+                                        }
+                                    ]
+                                },
+                                options: {
+                                    plugins: {
+                                        legend: {
+                                            labels: {
+                                                font: { size: 15 }
+                                            }
+                                        }
+                                    },
+                                    scales: {
+                                        y: { beginAtZero: true }
+                                    },
+                                    maintainAspectRatio: false
+                                }
+                            });
+                        })
+                        .catch(err => console.error('Error fetching weekly data:', err));
+                }
+
+                // Llenar el selector de semanas (fetch a /weeksdata)
+                fetch('/weeksdata')
+                    .then(response => response.json())
+                    .then(weeks => {
+                        const selectWeek = document.getElementById("SelectWeek");
+                        weeks.forEach(week => {
+                            let option = document.createElement("option");
+                            option.value = week;
+                            option.text = "Semana " + week;
+                            selectWeek.appendChild(option);
+                        });
+                        // Agregar listener para actualizar gráfica al cambiar semana
+                        selectWeek.addEventListener("change", function(){
+                            const selectedNode = document.getElementById("nodeSelectWeek").value;
+                            updateWeekChart(selectedNode, this.value);
+                        });
+                    })
+                    .catch(err => console.error('Error fetching weeks data:', err));
+
+                // Llenar el selector de nodos (usando /readingsperweek para extraerlos)
                 fetch('/readingsperweek')
                     .then(response => response.json())
                     .then(data => {
-                    // 1) Extract the unique node numbers
-                    const uniqueNodes = [...new Set(data.map(item => item.node))];
-
-                    // 2) For each node, filter the readings that belong to it
-                    uniqueNodes.forEach(node => {
-                        const nodeData = data.filter(item => item.node === node);
-                        
-                        // For example, use timestamps as labels
-                        const labels = nodeData.map(item => item.timestamp.substring(5,10));
-
-                        // Use humidity as the data
-                        const humidityData = nodeData.map(item => item.Humidity);
-                        const soilHumidityData = nodeData.map(item => item.soilHumidity);
-                        const temperatureData = nodeData.map(item => item.Temperature);
-
-                        // Create a heading for each node
-                        const heading = document.createElement('h2');
-                        document.getElementById('chartsContainer').appendChild(heading);
-
-                        // Create a new canvas element
-                        const canvas = document.createElement('canvas');
-                        // Optionally set an ID if you want to reference it later
-                        canvas.id = `chart_node_${node}`;
-                        canvas.width = 30;
-                        canvas.height = 10;
-                        document.getElementById('chartsContainer').appendChild(canvas);
-
-                        // Build the chart for this node
-                        const ctx = canvas.getContext('2d');
-                        new Chart(ctx, {
-                        type: 'line',
-                        data:{
-                            labels: labels,
-                            datasets: [
-                                {
-                                label: `Nodo ${node}`,
-                                borderColor: 'gray',
-                                },
-                                {
-                                    label: `Humedad ambiental`,
-                                    data: humidityData,
-                                    borderColor: 'blue',
-                                    fill: false
-                                },
-                                {
-                                    label: `Humedad del suelo`,
-                                    data: soilHumidityData,
-                                    borderColor: 'green',
-                                    fill: false
-                                },
-                                {
-                                    label: `Temperatura`,
-                                    data: temperatureData,
-                                    borderColor: 'red',
-                                    fill: false
-                                }
-                            ]
-                        },
-                        options: {
-                            plugins: {
-                                legend: {
-                                    labels: {
-                                        font: {
-                                            size: 15 
-                                        }
-                                    }
-                                }
-                            },
-                            scales: {
-                                y: {
-                                    beginAtZero: true
-                                }
-                            }
-                        }
+                        const nodes = [...new Set(data.map(item => item.node))];
+                        const selectNode = document.getElementById("nodeSelectWeek");
+                        nodes.forEach(node => {
+                            let option = document.createElement("option");
+                            option.value = node;
+                            option.text = "Nodo " + node;
+                            selectNode.appendChild(option);
                         });
-                    });
+                        // Agregar listener para actualizar gráfica al cambiar nodo
+                        selectNode.addEventListener("change", function(){
+                            const selectedWeek = document.getElementById("SelectWeek").value;
+                            updateWeekChart(this.value, selectedWeek);
+                        });
                     })
-                    .catch(err => console.error('Error fetching /readings:', err));
-                </script>
-            </body>
-            </html>
-            """
+                    .catch(err => console.error('Error fetching nodes data:', err));
 
-            return html_content
-
+                // Opcional: Puedes inicializar la gráfica usando los valores por defecto (sin nodo y sin semana)
+                updateWeekChart("", "");
+            </script>
+        </body>
+        </html>
+        """
+        return html_content
 
 class Reading(BaseModel):
     node: int
@@ -297,23 +382,31 @@ class Reading(BaseModel):
 def read_root():
     return RootFormat.show_screen()
 
+@app.get("/daysdata")
+def get_days_data():
+    data = db.get_all_readings()
+
+    current_month = datetime.now().strftime("%Y-%m")
+
+    dias = { lectura["timestamp"][3:13] for lectura in data if lectura["timestamp"][3:10] == current_month }
+    return sorted(dias)
 
 @app.get("/readings/day")
 def read_root():
     return ChartFormat.show_daychart()
 
 @app.get("/readingsperweek")
-def read_readings_week():
+def read_readings_week(week: str = None):
     data = db.get_all_readings()
-
     
-    date = datetime.now().strftime("%W %Y-%m-%d")
-    current_week = date[0:2]
+    if week:
+        week_readings = [reading for reading in data if reading["timestamp"][0:2] == week]
+    else:
+        date = datetime.now().strftime("%W %Y-%m-%d")
+        current_week = date[0:2]
+        week_readings = [reading for reading in data if reading["timestamp"][0:2] == current_week]
     
-    
-    week_readings = [reading for reading in data if reading["timestamp"][0:2] == current_week]
     week_readings = sorted(week_readings, key=lambda x: x["timestamp"][3:13])
-    
     
     node_day_readings = {}
     for reading in week_readings:
@@ -322,19 +415,16 @@ def read_readings_week():
         if node not in node_day_readings:
             node_day_readings[node] = {}
         if day not in node_day_readings[node]:
-    
             node_day_readings[node][day] = [node, 0, 0, 0, 0]
-        
         node_day_readings[node][day][1] += reading["Humidity"]
         node_day_readings[node][day][2] += reading["soilHumidity"]
         node_day_readings[node][day][3] += reading["Temperature"]
         node_day_readings[node][day][4] += 1
 
-    
     node_day_averages = []
-    for node, days in node_day_readings.items():
-        for day, values in days.items():
-            _, hum_sum, soil_sum, temp_sum, count = values
+    for nodo, dias in node_day_readings.items():
+        for dia, valores in dias.items():
+            _, hum_sum, soil_sum, temp_sum, count = valores
             if count > 0:
                 avg_humidity = round(hum_sum / count, 2)
                 avg_soilHumidity = round(soil_sum / count, 2)
@@ -342,8 +432,8 @@ def read_readings_week():
             else:
                 avg_humidity = avg_soilHumidity = avg_temperature = 0
             node_day_averages.append({
-                "node": node,
-                "timestamp": day,  # The day of the reading
+                "node": nodo,
+                "timestamp": dia,
                 "Humidity": avg_humidity,
                 "soilHumidity": avg_soilHumidity,
                 "Temperature": avg_temperature
@@ -353,62 +443,52 @@ def read_readings_week():
     return sorted(node_day_averages, key=lambda x: (x["node"], x["timestamp"]))
 
 @app.get("/readingsperday")
-def read_readings():
-
-  data = db.get_all_readings()
-  
-  date = datetime.now().strftime("%W %Y-%m-%d %H:%M")  # p.ej. "06 2025-04-03 15:00"
-  today = date.strip()[3:13]
-  today_readings = [reading for reading in data if reading["timestamp"][3:13] == today]
-  today_readings = sorted(today_readings, key=lambda x: x["timestamp"]) 
-  node_hour_readings = {}
-
-
-  for reading in today_readings:
-    node = reading["node"]
-    hour = int(reading["timestamp"][14:16])
-
-    if node not in node_hour_readings:
-        node_hour_readings[node] = [[0, 0, 0, 0, 0] for _ in range(24)]  # [node, humidity_sum, soilHumidity_sum, temperature_sum, counter]
-
-
-    humidity = reading["Humidity"]
-    soilHumidity = reading["soilHumidity"]
-    temperature = reading["Temperature"]
-
+def read_readings(date: str = None):
+    data = db.get_all_readings()
     
-    node_hour_readings[node][hour][0] = node  
-    node_hour_readings[node][hour][1] += humidity  
-    node_hour_readings[node][hour][2] += soilHumidity  
-    node_hour_readings[node][hour][3] += temperature  
-    node_hour_readings[node][hour][4] += 1
+    if date:
+        selected_day = date  
+    else:
+        now = datetime.now().strftime("%W %Y-%m-%d %H:%M")  # Ejemplo: "06 2025-04-03 15:00"
+        selected_day = now[3:13]  
+    
+    today_readings = [reading for reading in data if reading["timestamp"][3:13] == selected_day]
+    today_readings = sorted(today_readings, key=lambda x: x["timestamp"]) 
+    node_hour_readings = {}
+
+    for reading in today_readings:
+        node = reading["node"]
+        hour = int(reading["timestamp"][14:16])
+        if node not in node_hour_readings:
+            node_hour_readings[node] = [[0, 0, 0, 0, 0] for _ in range(24)]
+        node_hour_readings[node][hour][0] = node  
+        node_hour_readings[node][hour][1] += reading["Humidity"]  
+        node_hour_readings[node][hour][2] += reading["soilHumidity"]  
+        node_hour_readings[node][hour][3] += reading["Temperature"]  
+        node_hour_readings[node][hour][4] += 1
              
-  node_hour_averages = []
-    
-  for node, hours in node_hour_readings.items():
-      for hour in range(24):  
-        hour_data = hours[hour]
-        if hour_data[4] > 0:  
-            avg_humidity = round(hour_data[1] / hour_data[4],2)
-            avg_soilHumidity = round(hour_data[2] / hour_data[4],2)
-            avg_temperature = round(hour_data[3] / hour_data[4],2)
-        else:
-            avg_humidity = avg_soilHumidity = avg_temperature = 0
+    node_hour_averages = []
+    for node, hours in node_hour_readings.items():
+        for hour in range(24):
+            hour_data = hours[hour]
+            if hour_data[4] > 0:
+                avg_humidity = round(hour_data[1] / hour_data[4], 2)
+                avg_soilHumidity = round(hour_data[2] / hour_data[4], 2)
+                avg_temperature = round(hour_data[3] / hour_data[4], 2)
+            else:
+                avg_humidity = avg_soilHumidity = avg_temperature = 0
 
-        timestamp = f"{today} {hour:02d}:00"  # Por ejemplo: "2025-04-03 14:00"
+            timestamp = f"{selected_day} {hour:02d}:00"
+            node_hour_averages.append({
+                "node": node,
+                "timestamp": timestamp,
+                "Humidity": avg_humidity,
+                "soilHumidity": avg_soilHumidity,
+                "Temperature": avg_temperature
+            })
 
-            # Añadimos los resultados de los promedios en el diccionario
-        node_hour_averages.append({
-            "node": node,
-            "timestamp": timestamp,  # El timestamp generado
-            "Humidity": avg_humidity,
-            "soilHumidity": avg_soilHumidity,
-            "Temperature": avg_temperature
-        })
-
-  print(node_hour_averages)  
-  
-  return node_hour_averages
+    print(node_hour_averages)
+    return node_hour_averages
 
 
 @app.post("/readings")
@@ -423,65 +503,28 @@ def create_reading(reading: Reading):
     }
 
 
-
-#@app.get("/readings/week")
-#def read_readings_week():
-#    return ChartFormat.show_weekchart()
-
-
-@app.get("/weeks", response_class=HTMLResponse)
-def show_weeks():
+@app.get("/weeksdata")
+def get_weeks_data():
     data = db.get_all_readings()
     semanas = set()
     for lectura in data:
-        # Se asume que los dos primeros caracteres del timestamp representan la semana
         semana = lectura["timestamp"][0:2]
         semanas.add(semana)
-    semanas = sorted(semanas)
-
-    html_content = """
-    <!DOCTYPE html>
-    <html lang="es">
-    <head>
-        <meta charset="UTF-8">
-        <title>Semanas Disponibles</title>
-        <link rel="stylesheet" href="/static/styles.css">
-    </head>
-    <body>
-        <header>
-            <h1>Semanas disponibles en la base de datos</h1>
-        </header>
-        <main>
-            <ul>
-    """
-    for s in semanas:
-        # Al hacer clic se asume que se redirige a /readings/week con un query parameter
-        html_content += f"<li><a href='/readings/week?week={s}'>Semana {s}</a></li>"
-    html_content += """
-            </ul>
-        </main>
-    </body>
-    </html>
-    """
-    return html_content
+    return sorted(semanas)
 
 @app.get("/readings/week", response_class=HTMLResponse)
 def show_weekchart(week: str = None):
     data = db.get_all_readings()
 
     if week:
-        # Filtrar las lecturas que correspondan a la semana proporcionada
         week_readings = [r for r in data if r["timestamp"][0:2] == week]
         print(week_readings)
-        print("THis shit is not working")
     else:
-        # Si no se especifica semana, se usa la semana actual
         date = datetime.now().strftime("%W %Y-%m-%d")
         current_week = date[0:2]
         week_readings = [r for r in data if r["timestamp"][0:2] == current_week]
         
 
-    # Resto del procesamiento de datos igual que antes...
     week_readings = sorted(week_readings, key=lambda x: x["timestamp"][3:13])
     
     node_day_readings = {}
