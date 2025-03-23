@@ -11,6 +11,11 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 db = Database()  
 
 #TO DO: Move the HTML content to a separate file and load it here
+#TO DO: Figure out how to run in parallel the Serial Communication and the FastAPI server usig threads 
+
+
+#TO DO: After the previous points, add comments to the code, write in the readme how to run the project and access the web page  
+
 
 class RootFormat:
 
