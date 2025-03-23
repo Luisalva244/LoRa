@@ -10,6 +10,7 @@ app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 db = Database()  
 
+#TO DO: Move the HTML content to a separate file and load it here
 
 class RootFormat:
 
@@ -27,31 +28,40 @@ class RootFormat:
         <body>
             <main>
                 <section id="seccion-uno" class="seccion">
-                    <h1>Aplicaciones de LoRa con IoT en la agricultura de precisión.</h1>                   
+                    <h1 class="Header-Title"> Aplicaciones de LoRa con IoT en la agricultura de precisión</h1>                   
                 </section>
 
                 <section id="seccion-dos" class="seccion">
-                    <h2>Enfoque del proyecto</h2>
-                    <div class="servicios">
-                        <div class="servicio">
-                            <p>Este proyecto se enfoca en la implementación de una red de sensores IoT basada en la tecnología LoRa específicamente para el monitoreo agrícola en Monterrey, Nuevo León. Se establecerán dispositivos con sensores en áreas de cultivo para recolectar datos clave como la humedad del suelo, temperatura y humedad del ambiente, con el fin de optimizar prácticas agrícolas. </p>
-                        </div>
+                <h2 class="Header-Subtitle">Enfoque del proyecto</h2>
+                <div class="servicios">
+                    <!-- Text content on the left -->
+                    <div class="text-content">
+                    <p class="Text-Body">
+                        Este proyecto se enfoca en la implementación de una red de sensores IoT basada en la tecnología LoRa
+                        específicamente para el monitoreo agrícola en Monterrey, Nuevo León. Se establecerán dispositivos
+                        con sensores en áreas de cultivo para recolectar datos clave como la humedad del suelo, temperatura y
+                        humedad del ambiente, con el fin de optimizar prácticas agrícolas.
+                    </p>
                     </div>
+                    <!-- Image on the right -->
+                    <div class="image-container">
+                    <img src="/static/LoRa (1).jpg" alt="LoRa">
+                    </div>
+                </div>
                 </section>
 
                 <section id="seccion-tres" class="seccion">
-                    <h2>Monitoreo de los Datos</h2>
+                    <h2 class="Header-Subtitle">Monitoreo de los Datos</h2>
+                    <p class="Text-Body">Los dispositivos LoRa enviarán su información, la cual se recopilará en una base de datos y será procesada en tiempo real sobre las condiciones del suelo y el ambiente, permitiendo a los agricultores tomar decisiones informadas sobre el riego. Los datos incluirán:</p>
                     <br>
-                    <p>Los dispositivos LoRa enviarán su información, la cual se recopilará en una base de datos y será procesada en tiempo real sobre las condiciones del suelo y el ambiente, permitiendo a los agricultores tomar decisiones informadas sobre el riego. Los datos incluirán:</p>
-                        <li>Humedad del suelo</li>
-                        <li>Temperatura ambiental</li>
-                        <li>Humedad relativa del aire</li>
+                        <li class="Text-Body">Humedad del suelo</li>
+                        <li class="Text-Body">Temperatura ambiental</li>
+                        <li class="Text-Body">Humedad relativa del aire</li>
                     <br>
-                    <p>Estos datos serán procesados y mostrados en tiempo real, ayudando a mejorar la eficiencia de las actividades agrícolas y reduciendo el uso de recursos como el agua.</p>
+                    <p class="Text-Body">Estos datos serán procesados y mostrados en tiempo real, ayudando a mejorar la eficiencia de las actividades agrícolas y reduciendo el uso de recursos como el agua.</p>
                     <br>
-                    <div class="Semanabutton">
-                        <button onclick="window.location.href='http://192.168.1.74:8000/readings/day'">Lecturas del dia</button>
-                        <button onclick="window.location.href='http://192.168.1.74:8000/readings/week'">Promedio de la semana</button>                    
+                    <div class="Graphbutton">
+                        <button onclick="window.location.href='http://192.168.1.74:8000/readings/day'">Graficas</button>
                     </div>
                 </section>
             </main>
@@ -62,314 +72,288 @@ class RootFormat:
 
 
 class ChartFormat:
-
     @app.get("/readings/day", response_class=HTMLResponse)
     def show_daychart():
         html_content = """
         <!DOCTYPE html>
         <html lang="es">
         <head>
-            <meta charset="UTF-8">
-            <title>Lecturas del Día - Gráfica</title>
-            <link rel="stylesheet" type="text/css" href="/static/styles.css">
-            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+          <meta charset="UTF-8">
+          <title>Gráficas</title>
+          <link rel="stylesheet" type="text/css" href="/static/styles.css">
+          <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         </head>
         <body>
         <div class="controls-area">
-            <h1>Humedad de los nodos en el día</h1>
-            <div class="button-container">
-                <div class="Semanabutton">
-                    <button onclick="window.location.href='http://192.168.1.74:8000/'">Inicio</button>
-                </div>
-                <div class="Semanabutton">
-                    <button onclick="window.location.href='http://192.168.1.74:8000/readings/week'">
-                        Promedio de la semana
-                    </button>
-                </div>
-                <div class="Semanabutton">
-                    <select id="nodeSelectDay">
-                        <option value=""> Selecciona un nodo </option>
-                    </select>
-                </div>
-                <div class="Semanabutton">
-                    <select id="SelectDay">
-                        <option value=""> Selecciona un día </option>
-                    </select>
-                </div>
+        <h1 class="Header-Title-Graph" style="margin-bottom: 5px;">Informacion de los nodos</h1>
+        <div class="button-container" style="display: flex; flex-wrap: nowrap; align-items: center; gap: 10px;">
+            <!-- Botón "Inicio" -->
+            <div class="Semanabutton" style="width: 200px; height: 30px;">
+            <button onclick="window.location.href='http://192.168.1.74:8000/'" 
+                    style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
+                Inicio
+            </button>
+            </div>
+            <!-- Selector para escoger vista: día o semana -->
+            <div class="Semanabutton" style="width: 200px; height: 30px;">
+            <select id="chartSelect" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; text-align-last: center;">
+                <option value="day">Lecturas del día</option>
+                <option value="week">Promedio de la semana</option>
+            </select>
+            </div>
+            <!-- Control para "Selecciona un nodo" para lectura del día -->
+            <div id="nodeSelectDayContainer" class="Semanabutton" style="width: 200px; height: 30px;">
+            <select id="nodeSelectDay" 
+                    style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; text-align-last: center;">
+                <option value="">Selecciona un nodo</option>
+            </select>
+            </div>
+            <!-- Control para "Selecciona un día" -->
+            <div id="SelectDayContainer" class="Semanabutton" style="width: 200px; height: 30px;">
+            <select id="SelectDay" 
+                    style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; text-align-last: center;">
+                <option value="">Selecciona un día</option>
+            </select>
+            </div>
+            <!-- Control para "Selecciona un nodo" para lectura de la semana (oculto por defecto) -->
+            <div id="nodeSelectWeekContainer" class="Semanabutton" style="width: 200px; height: 30px; display: none;">
+            <select id="nodeSelectWeek" 
+                    style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; text-align-last: center;">
+                <option value="">Selecciona un nodo</option>
+            </select>
+            </div>
+            <!-- Control para "Selecciona una semana" (oculto por defecto) -->
+            <div id="SelectWeekContainer" class="Semanabutton" style="width: 200px; height: 30px; display: none;">
+            <select id="SelectWeek" 
+                    style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; text-align-last: center;">
+                <option value="">Selecciona una semana</option>
+            </select>
             </div>
         </div>
-            <!-- Contenedor para la gráfica -->
-            <div id="chartsContainer">
-                <canvas id="dayChart" width="400" height="800"></canvas>
-            </div>
-            <script>
-                let dayChartInstance = null;
+        </div>
+          <!-- Contenedor para la gráfica -->
+          <div id="chartsContainer">
+            <canvas id="chartCanvas" width="400" height="800"></canvas>
+          </div>
+          <script>
+            let chartInstance = null;
 
-                // Actualiza la gráfica según el nodo y el día seleccionados
-                function updateDayChart(selectedNode, selectedDay) {
-                    let url = '/readingsperday';
-                    if(selectedDay) {
-                        url += '?date=' + selectedDay;
+            // Función para actualizar la gráfica de lectura del día
+            function updateDayChart(selectedNode, selectedDay) {
+              let url = '/readingsperday';
+              if (selectedDay) {
+                url += '?date=' + selectedDay;
+              }
+              fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                  if (selectedNode) {
+                    data = data.filter(item => item.node == selectedNode);
+                  }
+                  if (data.length === 0) return;
+                  const labels = data.map(item => item.timestamp.substring(11, 16));
+                  const humidity = data.map(item => item.Humidity);
+                  const soilHumidity = data.map(item => item.soilHumidity);
+                  const temperature = data.map(item => item.Temperature);
+                  const ctx = document.getElementById("chartCanvas").getContext("2d");
+                  if (chartInstance) {
+                    chartInstance.destroy();
+                  }
+                  chartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                      labels: labels,
+                      datasets: [
+                        { label: "Humedad ambiental", data: humidity, borderColor: 'blue', fill: false },
+                        { label: "Humedad del suelo", data: soilHumidity, borderColor: 'green', fill: false },
+                        { label: "Temperatura", data: temperature, borderColor: 'red', fill: false }
+                      ]
+                    },
+                    options: {
+                      plugins: { legend: { labels: { font: { size: 15 } } } },
+                      scales: { y: { beginAtZero: true } },
+                      maintainAspectRatio: false
                     }
-                    fetch(url)
-                        .then(response => response.json())
-                        .then(data => {
-                            // Si se selecciona un nodo, filtrar los datos
-                            if(selectedNode) {
-                                data = data.filter(item => item.node == selectedNode);
-                            }
-                            if(data.length === 0) return;
-                            const labels = data.map(item => item.timestamp.substring(11, 16));
-                            const humidity = data.map(item => item.Humidity);
-                            const soilHumidity = data.map(item => item.soilHumidity);
-                            const temperature = data.map(item => item.Temperature);
-                            const ctx = document.getElementById("dayChart").getContext("2d");
-                            if(dayChartInstance) {
-                                dayChartInstance.destroy();
-                            }
-                            dayChartInstance = new Chart(ctx, {
-                                type: 'line',
-                                data: {
-                                    labels: labels,
-                                    datasets: [
-                                        { label: "Humedad ambiental", data: humidity, borderColor: 'blue', fill: false },
-                                        { label: "Humedad del suelo", data: soilHumidity, borderColor: 'green', fill: false },
-                                        { label: "Temperatura", data: temperature, borderColor: 'red', fill: false }
-                                    ]
-                                },
-                                options: {
-                                    plugins: {
-                                        legend: { labels: { font: { size: 15 } } }
-                                    },
-                                    scales: { y: { beginAtZero: true } },
-                                    maintainAspectRatio: false
-                                }
-                            });
-                        })
-                        .catch(err => console.error('Error fetching /readingsperday:', err));
-                }
+                  });
+                })
+                .catch(err => console.error('Error fetching /readingsperday:', err));
+            }
 
-                // Carga los días disponibles (del mes actual) en el selector
-                function loadDays() {
-                    fetch('/daysdata')
-                        .then(response => response.json())
-                        .then(days => {
-                            const selectDay = document.getElementById("SelectDay");
-                            selectDay.innerHTML = '<option value=""> Selecciona un día </option>';
-                            days.forEach(day => {
-                                let option = document.createElement("option");
-                                option.value = day;
-                                option.text = day;
-                                selectDay.appendChild(option);
-                            });
-                            // Si existen días, se selecciona el primero por defecto
-                            if(days.length > 0) {
-                                selectDay.value = days[0];
-                                updateDayChart("", days[0]);
-                                loadNodes(days[0]);
-                            }
-                        })
-                        .catch(err => console.error('Error fetching /daysdata:', err));
-                }
-
-                // Carga los nodos disponibles para el día seleccionado
-                function loadNodes(selectedDay) {
-                    let url = '/readingsperday';
-                    if(selectedDay) {
-                        url += '?date=' + selectedDay;
+            // Función para actualizar la gráfica de lectura de la semana
+            function updateWeekChart(selectedNode, selectedWeek) {
+              let url = '/readingsperweek';
+              if (selectedWeek) {
+                url += '?week=' + selectedWeek;
+              }
+              fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                  if (selectedNode) {
+                    data = data.filter(item => item.node == selectedNode);
+                  }
+                  if (data.length === 0) return;
+                  const labels = data.map(item => item.timestamp);
+                  const humidity = data.map(item => item.Humidity);
+                  const soilHumidity = data.map(item => item.soilHumidity);
+                  const temperature = data.map(item => item.Temperature);
+                  const ctx = document.getElementById("chartCanvas").getContext("2d");
+                  if (chartInstance) {
+                    chartInstance.destroy();
+                  }
+                  chartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                      labels: labels,
+                      datasets: [
+                        { label: "Humedad ambiental", data: humidity, borderColor: 'blue', fill: false },
+                        { label: "Humedad del suelo", data: soilHumidity, borderColor: 'green', fill: false },
+                        { label: "Temperatura", data: temperature, borderColor: 'red', fill: false }
+                      ]
+                    },
+                    options: {
+                      plugins: { legend: { labels: { font: { size: 15 } } } },
+                      scales: { y: { beginAtZero: true } },
+                      maintainAspectRatio: false
                     }
-                    fetch(url)
-                        .then(response => response.json())
-                        .then(data => {
-                            const nodes = [...new Set(data.map(item => item.node))];
-                            const selectNode = document.getElementById("nodeSelectDay");
-                            selectNode.innerHTML = '<option value=""> Selecciona un nodo </option>';
-                            nodes.forEach(node => {
-                                let option = document.createElement("option");
-                                option.value = node;
-                                option.text = "Nodo " + node;
-                                selectNode.appendChild(option);
-                            });
-                        })
-                        .catch(err => console.error('Error fetching nodes:', err));
-                }
+                  });
+                })
+                .catch(err => console.error('Error fetching /readingsperweek:', err));
+            }
 
-                // Evento para cambio en el selector de días
-                document.getElementById("SelectDay").addEventListener("change", function() {
-                    const selectedDay = this.value;
-                    const selectedNode = document.getElementById("nodeSelectDay").value;
-                    updateDayChart(selectedNode, selectedDay);
-                    loadNodes(selectedDay);
-                });
+            // Función que actualiza la gráfica según la selección de vista
+            function updateChart() {
+            const chartType = document.getElementById("chartSelect").value;
+            if (chartType === "day") {
+                document.getElementById("nodeSelectDayContainer").style.display = "block";
+                document.getElementById("SelectDayContainer").style.display = "block";
+                document.getElementById("nodeSelectWeekContainer").style.display = "none";
+                document.getElementById("SelectWeekContainer").style.display = "none";
+                const selectedNode = document.getElementById("nodeSelectDay").value;
+                const selectedDay = document.getElementById("SelectDay").value;
+                updateDayChart(selectedNode, selectedDay);
+            } else {
+                document.getElementById("nodeSelectDayContainer").style.display = "none";
+                document.getElementById("SelectDayContainer").style.display = "none";
+                document.getElementById("nodeSelectWeekContainer").style.display = "block";
+                document.getElementById("SelectWeekContainer").style.display = "block";
+                const selectedNode = document.getElementById("nodeSelectWeek").value;
+                const selectedWeek = document.getElementById("SelectWeek").value;
+                updateWeekChart(selectedNode, selectedWeek);
+            }
+            }
 
-                // Evento para cambio en el selector de nodos
-                document.getElementById("nodeSelectDay").addEventListener("change", function() {
-                    const selectedNode = this.value;
-                    const selectedDay = document.getElementById("SelectDay").value;
-                    updateDayChart(selectedNode, selectedDay);
-                });
+            // Listeners para el cambio de la vista
+            document.getElementById("chartSelect").addEventListener("change", updateChart);
 
-                // Inicia cargando los días disponibles
-                loadDays();
-            </script>
+            // Para los selectores de día
+            document.getElementById("SelectDay").addEventListener("change", function () {
+              updateChart();
+              loadNodesDay();
+            });
+            document.getElementById("nodeSelectDay").addEventListener("change", updateChart);
+
+            // Para los selectores de semana
+            document.getElementById("SelectWeek").addEventListener("change", updateChart);
+            document.getElementById("nodeSelectWeek").addEventListener("change", updateChart);
+
+            // Carga los días disponibles y los nodos para el día actual
+            function loadDays() {
+              fetch('/daysdata')
+                .then(response => response.json())
+                .then(days => {
+                  const selectDay = document.getElementById("SelectDay");
+                  selectDay.innerHTML = '<option value=""> Selecciona un día </option>';
+                  days.forEach(day => {
+                    let option = document.createElement("option");
+                    option.value = day;
+                    option.text = day;
+                    selectDay.appendChild(option);
+                  });
+                  if (days.length > 0) {
+                    selectDay.value = days[0];
+                    updateChart();
+                    loadNodesDay();
+                  }
+                })
+                .catch(err => console.error('Error fetching /daysdata:', err));
+            }
+
+            function loadNodesDay() {
+              let url = '/readingsperday';
+              let selectedDay = document.getElementById("SelectDay").value;
+              if (selectedDay) {
+                url += '?date=' + selectedDay;
+              }
+              fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                  const nodes = [...new Set(data.map(item => item.node))];
+                  const selectNode = document.getElementById("nodeSelectDay");
+                  selectNode.innerHTML = '<option value=""> Selecciona un nodo </option>';
+                  nodes.forEach(node => {
+                    let option = document.createElement("option");
+                    option.value = node;
+                    option.text = "Nodo " + node;
+                    selectNode.appendChild(option);
+                  });
+                })
+                .catch(err => console.error('Error fetching nodes for day:', err));
+            }
+
+            // Carga las semanas disponibles y los nodos para la vista de semana
+            function loadWeeks() {
+              fetch('/weeksdata')
+                .then(response => response.json())
+                .then(weeks => {
+                  const selectWeek = document.getElementById("SelectWeek");
+                  selectWeek.innerHTML = '<option value=""> Selecciona una semana </option>';
+                  weeks.forEach(week => {
+                    let option = document.createElement("option");
+                    option.value = week;
+                    option.text = "Semana " + week;
+                    selectWeek.appendChild(option);
+                  });
+                  if (weeks.length > 0) {
+                    selectWeek.value = weeks[0];
+                    updateChart();
+                    loadNodesWeek();
+                  }
+                })
+                .catch(err => console.error('Error fetching /weeksdata:', err));
+            }
+
+            function loadNodesWeek() {
+              let url = '/readingsperweek';
+              let selectedWeek = document.getElementById("SelectWeek").value;
+              if (selectedWeek) {
+                url += '?week=' + selectedWeek;
+              }
+              fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                  const nodes = [...new Set(data.map(item => item.node))];
+                  const selectNode = document.getElementById("nodeSelectWeek");
+                  selectNode.innerHTML = '<option value=""> Selecciona un nodo </option>';
+                  nodes.forEach(node => {
+                    let option = document.createElement("option");
+                    option.value = node;
+                    option.text = "Nodo " + node;
+                    selectNode.appendChild(option);
+                  });
+                })
+                .catch(err => console.error('Error fetching nodes for week:', err));
+            }
+
+            // Inicializa cargando ambos (días y semanas) y actualizando según la opción predeterminada
+            loadDays();
+            loadWeeks();
+            updateChart();
+          </script>
         </body>
         </html>
         """
         return html_content
-    
 
-    @app.get("/readings/week", response_class=HTMLResponse)
-    def show_weekchart():
-        html_content = """
-        <!DOCTYPE html>
-        <html lang="es">
-        <head>
-            <meta charset="UTF-8">
-            <title>Lecturas de la Semana - Gráfica</title>
-            <link rel="stylesheet" type="text/css" href="/static/styles.css">
-            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        </head>
-        <body>
-        <div class="controls-area">        
-            <h1>Humedad de los nodos en la semana</h1>
-            <div class="button-container">
-                <div class="Semanabutton">
-                    <button onclick="window.location.href='http://192.168.1.74:8000/'">Inicio</button>
-                </div>
-                <div class="Semanabutton">
-                    <button onclick="window.location.href='http://192.168.1.74:8000/readings/day'">Lecturas del día</button>
-                </div>
-                <!-- Selector para nodo -->
-                <div class="Semanabutton">
-                    <select id="nodeSelectWeek">
-                        <option value=""> Selecciona un nodo </option>
-                    </select>
-                </div>
-                <!-- Selector para semana -->
-                <div class="Semanabutton">
-                    <select id="SelectWeek">
-                        <option value=""> Selecciona una semana </option>
-                    </select>
-                </div>                
-            </div>
-        </div>        
-            <!-- Contenedor para la gráfica única -->
-            <div id="chartsContainer">
-                <canvas id="weekChart" width="400" height="800"></canvas>
-            </div>
-            <script>
-                let weekChartInstance = null;
-
-                // Función para actualizar la gráfica con parámetros de nodo y semana seleccionados
-                function updateWeekChart(selectedNode, selectedWeek) {
-                    let url = '/readingsperweek';
-                    if(selectedWeek) {      url += '?week=' + selectedWeek;  }
-                    fetch(url)
-                        .then(response => response.json())
-                        .then(data => {
-                            // Si se selecciona un nodo, filtrar los datos
-                            if(selectedNode) {
-                                data = data.filter(item => item.node == selectedNode);
-                            }
-                            if(data.length === 0) return;
-                            const labels = data.map(item => item.timestamp);
-                            const humidity = data.map(item => item.Humidity);
-                            const soilHumidity = data.map(item => item.soilHumidity);
-                            const temperature = data.map(item => item.Temperature);
-
-                            const ctx = document.getElementById("weekChart").getContext("2d");
-                            if(weekChartInstance != null) {
-                                weekChartInstance.destroy();
-                            }
-                            weekChartInstance = new Chart(ctx, {
-                                type: 'line',
-                                data: {
-                                    labels: labels,
-                                    datasets: [
-                                        {
-                                            label: "Humedad ambiental",
-                                            data: humidity,
-                                            borderColor: 'blue',
-                                            fill: false
-                                        },
-                                        {
-                                            label: "Humedad del suelo",
-                                            data: soilHumidity,
-                                            borderColor: 'green',
-                                            fill: false
-                                        },
-                                        {
-                                            label: "Temperatura",
-                                            data: temperature,
-                                            borderColor: 'red',
-                                            fill: false
-                                        }
-                                    ]
-                                },
-                                options: {
-                                    plugins: {
-                                        legend: {
-                                            labels: {
-                                                font: { size: 15 }
-                                            }
-                                        }
-                                    },
-                                    scales: {
-                                        y: { beginAtZero: true }
-                                    },
-                                    maintainAspectRatio: false
-                                }
-                            });
-                        })
-                        .catch(err => console.error('Error fetching weekly data:', err));
-                }
-
-                // Llenar el selector de semanas (fetch a /weeksdata)
-                fetch('/weeksdata')
-                    .then(response => response.json())
-                    .then(weeks => {
-                        const selectWeek = document.getElementById("SelectWeek");
-                        weeks.forEach(week => {
-                            let option = document.createElement("option");
-                            option.value = week;
-                            option.text = "Semana " + week;
-                            selectWeek.appendChild(option);
-                        });
-                        // Agregar listener para actualizar gráfica al cambiar semana
-                        selectWeek.addEventListener("change", function(){
-                            const selectedNode = document.getElementById("nodeSelectWeek").value;
-                            updateWeekChart(selectedNode, this.value);
-                        });
-                    })
-                    .catch(err => console.error('Error fetching weeks data:', err));
-
-                // Llenar el selector de nodos (usando /readingsperweek para extraerlos)
-                fetch('/readingsperweek')
-                    .then(response => response.json())
-                    .then(data => {
-                        const nodes = [...new Set(data.map(item => item.node))];
-                        const selectNode = document.getElementById("nodeSelectWeek");
-                        nodes.forEach(node => {
-                            let option = document.createElement("option");
-                            option.value = node;
-                            option.text = "Nodo " + node;
-                            selectNode.appendChild(option);
-                        });
-                        // Agregar listener para actualizar gráfica al cambiar nodo
-                        selectNode.addEventListener("change", function(){
-                            const selectedWeek = document.getElementById("SelectWeek").value;
-                            updateWeekChart(this.value, selectedWeek);
-                        });
-                    })
-                    .catch(err => console.error('Error fetching nodes data:', err));
-
-                // Opcional: Puedes inicializar la gráfica usando los valores por defecto (sin nodo y sin semana)
-                updateWeekChart("", "");
-            </script>
-        </body>
-        </html>
-        """
-        return html_content
 
 class Reading(BaseModel):
     node: int
