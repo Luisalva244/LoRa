@@ -9,7 +9,7 @@
 #define DHTTYPE DHT22
 
 // Inicialización de variables globales
-RTC_DATA_ATTR int readsPerHour = 120;
+RTC_DATA_ATTR int readsPerHour = 119;
 RTC_DATA_ATTR uint64_t wakeupTime = 3600000000ULL / readsPerHour;
 RTC_DATA_ATTR int messagesCounter = 0; 
 RTC_DATA_ATTR uint8_t hour = 5;
@@ -39,7 +39,6 @@ void setupLoRaSender()
 
      
     WiFi.mode(WIFI_STA);
-    //delay(1000);
     esp_wifi_get_mac(WIFI_IF_STA, macAddr);
     sprintf(senderMAC, "%02X:%02X:%02X:%02X:%02X:%02X",
             macAddr[0], macAddr[1], macAddr[2],
@@ -72,17 +71,6 @@ void setupLoRaSender()
 
 void loopLoRaSender() 
 {
-   
-   /* if (lora_idle && (messagesCounter == readsPerHour - 119)) 
-    {
-        requestHour req;
-        strncpy(req.node, macStr, sizeof(req.node));
-        strncpy(req.command, "TIME_REQ", sizeof(req.command) - 1);
-                req.command[sizeof(req.command) - 1] = '\0';
-
-        msgSender.sendCommandMessage(req);  // Send the TIME_REQ message
-    }
-    */
 
     if (lora_idle) 
     {
@@ -101,9 +89,6 @@ void loopLoRaSender()
         esp_deep_sleep_start();         
     }
 
-
-
-
     Radio.IrqProcess();  // Handle interrupts
 
 }
@@ -113,40 +98,16 @@ void OnTxDone(void) {
     lora_idle = true;
 }
 
-void OnTxTimeout(void) {
+void OnTxTimeout(void)
+{
     Serial.println("TX timeout...");
     lora_idle = true;
 }
 
 
-void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr) {
-   /* for (uint16_t i = 0; i < size; i++) {
-        Serial.printf("%02X ", payload[i]);
-    }
-    Serial.println("Message Received");
+void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr) 
+{
 
-    // Handle the received message
-    if (size == sizeof(nodehourData)) {
-        nodehourData rxData;
-        memcpy(&rxData, payload, sizeof(nodehourData));
-
-        if (rxData.hour == 10) {  // Example check for specific hour
-            Serial.print("Received hour message: ");
-            Serial.println(rxData.hour);
-            Serial.println(rxData.node);
-        } else {
-            Serial.print("Received unknown hour message from: ");
-            Serial.println(rxData.node);
-        }
-
-        messageReceived = true;
-    } else {
-        messageReceived = false;
-    }
-
-    // Re-enable reception for the next message
-    Radio.Rx(0);
-*/
 }
 
 
@@ -160,9 +121,9 @@ void SoilHumidity(int pin, struct cropData *data)
 void DhtValues(struct cropData *data)
 {
       delay(500);
-      float h = dht.readHumidity(); //Leemos la Humedad
-      float t = dht.readTemperature(); //Leemos la temperatura en grados Celsius
-      //--------Enviamos las lecturas por el puerto serial-------------
+      float h = dht.readHumidity(); 
+      float t = dht.readTemperature(); 
+
       data->Humidity = h;
       data->Temperature = t;
 }

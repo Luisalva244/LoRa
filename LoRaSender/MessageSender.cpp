@@ -1,5 +1,5 @@
 #include "MessageSender.h"
-#include "LoRaSender.h"  // Para obtener la definición de nodehourData
+#include "LoRaSender.h"  
 #include <string.h>
 
 

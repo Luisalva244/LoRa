@@ -1,8 +1,8 @@
-from app.Acquisition.SerialReader import PySerialReader
+from Acquisition.SerialReader import PySerialReader
 import time
-from app.Acquisition.Utilities import HumidityParser, soilHumidityParser, NodeParser, TemperatureParser
-from app.Acquisition.Data import DataManager
-from app.routers.db import Database
+from Acquisition.Utilities import HumidityParser, soilHumidityParser, NodeParser, TemperatureParser
+from Acquisition.Data import DataManager
+from routers.db import Database
 import random
 
 
@@ -14,7 +14,7 @@ def main():
 
     db = Database()
 
-    serial_reader = PySerialReader(port='/dev/ttyUSB2', baudrate=115200, timeout=1)
+    serial_reader = PySerialReader(port='/dev/ttyUSB1', baudrate=115200, timeout=1)
     
     node_parser = NodeParser()
     humidity_parser = HumidityParser()
@@ -29,16 +29,16 @@ def main():
 
         if data is not None:
             tipo = data['type']      
-            # valor = data['value'] 
+            valor = data['value'] 
                         
             if tipo == 'node':
-                node_val = random.randint(1, 2)
+                node_val = valor
             elif tipo == 'soilHumidity':
-                soil_humidity_val = random.randint(1, 100)
+                soil_humidity_val = valor
             elif tipo == 'Humidity':
-                humidity_val = random.randint(1, 100)
+                humidity_val = valor
             elif tipo == 'Temperature':
-                temperature_val = random.randint(1, 100)
+                temperature_val = valor
 
             if node_val is not None and soil_humidity_val is not None and humidity_val is not None and temperature_val is not None:
                 dbInfo = {
